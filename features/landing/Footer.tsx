@@ -1,76 +1,71 @@
-import React from 'react';
-import styled from "styled-components";
-import {rem} from "../../helpers/common-function";
-import {CommonPTag, DEFAULT_DEVICE} from "../../constants/styles";
-import {Box, Grid} from 'theme-ui';
-import {useIntl} from "react-intl";
+import React from "react"
+import styled from "styled-components"
+import { rem } from "../../helpers/common-function"
+import { CommonPTag, DEFAULT_DEVICE } from "../../constants/styles"
+import { Box, Grid } from "theme-ui"
+import { useTranslation } from "next-i18next"
 
 const FOOTER_SECTION = [
-    {
-        gap: 1,
-        title: 'homepage.about',
-        link: [
-            { label: 'home.landingPage', url: "/" },
-            { label: 'home.whitePaper', url: "/" },
-            { label: 'home.term', url: "/" },
-            { label: 'home.privacy', url: "/" },
-        ]
-    },
-    {
-        gap: 2,
-        title: 'homepage.support',
-        link: [
-            { label: 'home.faq', url: "/" },
-            { label: 'home.oraclePrice', url: "/" },
-        ]
-    }
+  {
+    gap: 1,
+    title: "homepage.about",
+    link: [
+      { label: "home.landingPage", url: "/" },
+      { label: "home.whitePaper", url: "/" },
+      { label: "home.term", url: "/" },
+      { label: "home.privacy", url: "/" },
+    ],
+  },
+  {
+    gap: 2,
+    title: "homepage.support",
+    link: [
+      { label: "home.faq", url: "/" },
+      { label: "home.oraclePrice", url: "/" },
+    ],
+  },
 ]
 
 const Footer = () => {
-    const { formatMessage } = useIntl()
-    return (
-        <FooterContainer>
-                <Grid gap={2} columns={[1, '1fr 1fr 1fr 1fr']}>
-                    <Grid>
-                        <Box>
-                            <Logo src={`/images/icon/polka-icon.svg`} alt={``} />
-                            <Image src={`/images/icon/polka-label.svg`} alt={``} width={82} height={30} />
-                        </Box>
-                    </Grid>
-                    {
-                        FOOTER_SECTION.map(({ gap, title, link }) => (
-                            <div key={title}>
-                                <CommonPTag fSize={18} weight={`bold`} m={`0 0 25px 0`}>
-                                    {formatMessage({ id: title })}
-                                </CommonPTag>
-                                {link.map(({label, url }, idx) => (
-                                    <Box key={label} sx={{ marginTop: 12 }}>
-                                        <Link href={url} target={"_blank"}>
-                                            {formatMessage({ id: label })}
-                                        </Link>
-                                    </Box>
-                                ))}
-                            </div>
-                        ))
-                    }
-                    <Grid>
-                        <Box>
-                            <Link href={"/"}>
-                                <Image src={'/images/icon/facebook.svg'} alt={``}/>
-                                <Image src={'/images/icon/twitter.svg'} alt={``}/>
-                                <Image src={'/images/icon/telegram.svg'} alt={``}/>
-                            </Link>
-                        </Box>
+  const { t } = useTranslation()
+  return (
+    <FooterContainer>
+      <Grid gap={2} columns={[1, "1fr 1fr 1fr 1fr"]}>
+        <Grid>
+          <Box>
+            <Logo src={`/images/icon/polka-icon.svg`} alt={``} />
+            <Image src={`/images/icon/polka-label.svg`} alt={``} width={82} height={30} />
+          </Box>
+        </Grid>
+        {FOOTER_SECTION.map(({ gap, title, link }) => (
+          <div key={title}>
+            <CommonPTag fSize={18} weight={`bold`} m={`0 0 25px 0`}>
+              {t(title)}
+            </CommonPTag>
+            {link.map(({ label, url }, idx) => (
+              <Box key={label} sx={{ marginTop: 12 }}>
+                <Link href={url} target={"_blank"}>
+                  {t(label)}
+                </Link>
+              </Box>
+            ))}
+          </div>
+        ))}
+        <Grid>
+          <Box>
+            <Link href={"/"}>
+              <Image src={"/images/icon/facebook.svg"} alt={``} />
+              <Image src={"/images/icon/twitter.svg"} alt={``} />
+              <Image src={"/images/icon/telegram.svg"} alt={``} />
+            </Link>
+          </Box>
+        </Grid>
+      </Grid>
+    </FooterContainer>
+  )
+}
 
-                    </Grid>
-
-                </Grid>
-
-        </FooterContainer>
-    );
-};
-
-export default Footer;
+export default Footer
 
 //------------
 const FooterContainer = styled.footer`
@@ -87,7 +82,7 @@ const Logo = styled.img`
 `
 
 const Link = styled.a`
-    color: white;
+  color: white;
   font-weight: 500;
   font-size: ${rem(14)};
   line-height: ${rem(17)};

@@ -1,14 +1,14 @@
-import React, {useState} from 'react';
-import {Box, Button, Text} from "theme-ui";
-import {Link} from "react-router-dom";
-import {FormattedMessage, useIntl} from "react-intl";
-import {TagFilter} from "../../helpers/model";
-import {COIN_TAGS, test} from "../../constants/variables";
-import TemplateListing from "../../components/TemplateListing";
+import React, { useState } from "react"
+import { Box, Button, Text } from "theme-ui"
+import { TagFilter } from "../../helpers/model"
+import { COIN_TAGS, test } from "../../constants/variables"
+import TemplateListing from "../../components/TemplateListing"
+import Link from "next/link"
+import { Trans, useTranslation } from "next-i18next"
 
 const ilksColumns: any = [
   {
-    headerLabel: 'system.asset',
+    headerLabel: "system.asset",
     header: (abc: any) => {
       console.log(abc)
       return <p>{abc.label}</p>
@@ -16,63 +16,55 @@ const ilksColumns: any = [
     cell: ({ name }: any) => <>{name}</>,
   },
   {
-    headerLabel: 'system.type',
+    headerLabel: "system.type",
     header: ({ label }: any) => <p>{label}</p>,
     cell: ({ ilk }: any) => <Text>{ilk}</Text>,
   },
   {
-    headerLabel: 'system.stabilityFee',
-    header: ({ label, ...filters }: any) => (
+    headerLabel: "system.stabilityFee",
+    header: ({ label }: any) => (
       // <TableSortHeader sx={{ ml: 'auto' }} filters={filters as any} sortBy="ilkDebtAvailable">
       <p>{label}</p>
       // </TableSortHeader>
     ),
-    cell: ({ price }: any) => (
-      <Text sx={{ textAlign: 'right' }}>{price}</Text>
-    ),
+    cell: ({ price }: any) => <Text sx={{ textAlign: "right" }}>{price}</Text>,
   },
   {
-    headerLabel: 'system.liquidityRatio',
-    header: ({ label, ...filters }: any) => (
+    headerLabel: "system.liquidityRatio",
+    header: ({ label }: any) => (
       // <TableSortHeader sx={{ ml: 'auto' }} filters={filters as any} sortBy="ilkDebtAvailable">
       <p>{label}</p>
       // </TableSortHeader>
     ),
-    cell: ({ price }: any) => (
-      <Text sx={{ textAlign: 'right' }}>{price}</Text>
-    ),
+    cell: ({ price }: any) => <Text sx={{ textAlign: "right" }}>{price}</Text>,
   },
   {
-    headerLabel: 'system.liquidityPenalty',
-    header: ({ label, ...filters }: any) => (
+    headerLabel: "system.liquidityPenalty",
+    header: ({ label }: any) => (
       // <TableSortHeader sx={{ ml: 'auto' }} filters={filters as any} sortBy="ilkDebtAvailable">
       <p>{label}</p>
       // </TableSortHeader>
     ),
-    cell: ({ price }: any) => (
-      <Text sx={{ textAlign: 'right' }}>{price}</Text>
-    ),
+    cell: ({ price }: any) => <Text sx={{ textAlign: "right" }}>{price}</Text>,
   },
   {
-    headerLabel: 'system.pUSDAvailable',
-    header: ({ label, ...filters }: any) => (
+    headerLabel: "system.pUSDAvailable",
+    header: ({ label }: any) => (
       // <TableSortHeader sx={{ ml: 'auto' }} filters={filters as any} sortBy="ilkDebtAvailable">
       <p>{label}</p>
       // </TableSortHeader>
     ),
-    cell: ({ price }: any) => (
-      <Text sx={{ textAlign: 'right' }}>{price}</Text>
-    ),
+    cell: ({ price }: any) => <Text sx={{ textAlign: "right" }}>{price}</Text>,
   },
   {
-    headerLabel: 'kkk',
+    headerLabel: "kkk",
     header: () => null,
     cell: ({ ilk }: any) => (
-      <Box sx={{ flexGrow: 1, textAlign: 'right' }}>
+      <Box sx={{ flexGrow: 1, textAlign: "right" }}>
         <Link
           // sx={{ width: ['100%', 'inherit'], textAlign: 'center', maxWidth: ['100%', '150px'] }}
           // variant="secondary"
-          to={`/vaults/open/${ilk}`}
+          href={`/vaults/open/${ilk}`}
           // disabled={ilkDebtAvailable.isZero()}
         >
           {/*{!ilkDebtAvailable.isZero() ? (*/}
@@ -81,10 +73,10 @@ const ilksColumns: any = [
           <Button
             variant="secondary"
             // disabled={true}
-            sx={{ width: '100%', maxWidth: ['100%', '150px'] }}
+            sx={{ width: "100%", maxWidth: ["100%", "150px"] }}
           >
             <Text>
-              <FormattedMessage id="createLoan" />
+              <Trans i18nKey="createLoan" />
             </Text>
           </Button>
           {/*)}*/}
@@ -94,9 +86,8 @@ const ilksColumns: any = [
   },
 ]
 
-
 const LoanList = () => {
-  const { formatMessage } = useIntl()
+  const { t } = useTranslation()
   const [searchText, setSearchtext] = useState<string>("")
   const [tagFilter, setTagFilter] = useState<TagFilter>("popular")
   const onSearch = (value: string) => {
@@ -109,16 +100,16 @@ const LoanList = () => {
 
   const options: { value: TagFilter; label: string }[] = [
     {
-      value: 'popular',
-      label: formatMessage({ id: 'filters.popular' }),
+      value: "popular",
+      label: t("filters.popular"),
     },
     {
       value: undefined,
-      label: formatMessage({ id: 'all-assets' }),
+      label: t("all-assets"),
     },
     ...COIN_TAGS.map((tag) => ({
       value: tag,
-      label: formatMessage({ id: `filters.${tag}` }),
+      label: t(`filters.${tag}`),
     })),
   ]
 
@@ -136,10 +127,10 @@ const LoanList = () => {
       primaryKey={"ilk"}
       columns={ilksColumns}
       options={options}
-      defaultTag={'all-assets'}
-      page={'Create-loan'}
+      defaultTag={"all-assets"}
+      page={"Create-loan"}
     />
   )
-};
+}
 
-export default LoanList;
+export default LoanList

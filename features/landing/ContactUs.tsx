@@ -1,24 +1,23 @@
-import React from 'react';
-import styled from "styled-components";
-import {rem} from "../../helpers/common-function";
-import {CommonPTag, DEFAULT_DEVICE} from "../../constants/styles";
-import {useIntl} from "react-intl";
+import React from "react"
+import styled from "styled-components"
+import { rem } from "../../helpers/common-function"
+import { CommonPTag, DEFAULT_DEVICE } from "../../constants/styles"
+import { useTranslation } from "next-i18next"
 
 const ContactUs = () => {
-    const { formatMessage } = useIntl()
-    return (
-        <Container>
-            <Title>
-                {formatMessage({ id: 'homepage.contactUs' })}
-            </Title>
-            <CommonPTag fSize={24} weight={400} fColor={`#282736`} tAlign={`center`}>{formatMessage({ id: 'homepage.getQuestion' })}</CommonPTag>
-            <Button>support@polkafi.finance</Button>
+  const { t } = useTranslation()
+  return (
+    <Container>
+      <Title>{t("homepage.contactUs")}</Title>
+      <CommonPTag fSize={24} weight={400} fColor={`#282736`} tAlign={`center`}>
+        {t("homepage.getQuestion")}
+      </CommonPTag>
+      <Button>support@polkafi.finance</Button>
+    </Container>
+  )
+}
 
-        </Container>
-    );
-};
-
-export default ContactUs;
+export default ContactUs
 
 //-------------------------
 const Container = styled.div`
@@ -44,7 +43,7 @@ const Title = styled.p`
     rgba(189, 14, 193, 1) 50%,
     rgba(38, 242, 255, 1) 51%
   );
-  
+
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 `
@@ -53,12 +52,12 @@ const Button = styled.button`
   display: flex;
   justify-content: center;
   align-items: center;
-  background: linear-gradient(140.62deg, #903AFD -13.58%, #492CFF 102.52%);
+  background: linear-gradient(140.62deg, #903afd -13.58%, #492cff 102.52%);
   border-radius: ${rem`32px`};
   border: none;
   color: white;
   cursor: pointer;
-  
+
   margin-top: ${rem`45px`};
 
   @media ${DEFAULT_DEVICE.laptop} {

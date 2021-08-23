@@ -1,16 +1,15 @@
-import React, { ComponentProps, useState } from "react"
+import React, { ComponentProps, ReactNode } from "react"
 import styled from "styled-components"
 // @ts-ignore
 import { Icon } from "@makerdao/dai-ui-icons"
-import { Box, Button, Flex, Text } from "theme-ui"
+import { Flex, Text } from "theme-ui"
 import { getToken } from "../blockchain/tokensMetadata"
-import { Link } from "react-router-dom"
-import { FormattedMessage, useIntl } from "react-intl"
 import { TagFilter } from "../helpers/model"
 import { FiltersWithPopular } from "../features/vaults-list/FiltersWithPopular"
 import { rem } from "../helpers/common-function"
 import { ColumnDef, RowProps, Table } from "./Table"
-import { test } from "../constants/variables"
+import { useTranslation } from "next-i18next"
+import { isString } from "lodash"
 
 export function TokenSymbol({
   token,
@@ -35,8 +34,8 @@ export function TokenSymbol({
 }
 
 interface ListingProp<T extends Record<K, string>, K extends keyof T, S> {
-  title?: string
-  lead?: string
+  title?: string | ReactNode
+  lead?: string | ReactNode
   searchText?: string
   onSearch?: (text: string) => void
   onTagChain: (tagFilter: TagFilter) => void
@@ -53,7 +52,7 @@ interface ListingProp<T extends Record<K, string>, K extends keyof T, S> {
 }
 
 function TemplateListing<T extends Record<K, string>, K extends keyof T, S>({
-  deriveRowProps,
+  //deriveRowProps,
   columns,
   state,
   primaryKey,
@@ -68,12 +67,12 @@ function TemplateListing<T extends Record<K, string>, K extends keyof T, S>({
   page,
   options,
 }: ListingProp<T, K, S>) {
-  const { formatMessage } = useIntl()
+  const { t } = useTranslation()
 
   return (
     <Container>
-      {title && <Title>{formatMessage({ id: title })}</Title>}
-      {lead && <Lead>{formatMessage({ id: lead })}</Lead>}
+      {title && isString(title) ? <Title>{t(title)}</Title> : <>{title}</>}
+      {lead && isString(lead) ? <Lead>{t(lead)}</Lead> : <>{lead}</>}
       <Space />
       <FiltersWithPopular
         onSearch={onSearch}
@@ -82,7 +81,7 @@ function TemplateListing<T extends Record<K, string>, K extends keyof T, S>({
         tagFilter={tagFilter}
         defaultTag={defaultTag}
         page={page}
-        searchPlaceholder={formatMessage({ id: "search-token" })}
+        searchPlaceholder={t("search-token")}
         options={options}
       />
       <Table
@@ -91,7 +90,7 @@ function TemplateListing<T extends Record<K, string>, K extends keyof T, S>({
         state={state}
         columns={columns}
         noResults={<></>}
-        deriveRowProps={(row) => ({
+        deriveRowProps={() => ({
           // href: row.ilkDebtAvailable.isZero() ? undefined : `/vaults/open/${row.ilk}`,
           // onClick: () => trackingEvents.openVault(Pages.LandingPage, row.ilk),
         })}

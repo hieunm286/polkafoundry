@@ -1,68 +1,67 @@
-import React, { useMemo } from "react"
+import React, { useMemo, useState } from "react"
 import { rem } from "../../helpers/common-function"
 import styled from "styled-components"
 import TemplateCreate from "../../components/TemplateCreate"
-import { CREATE_LOAN_STAGE } from "../../recoil/atoms"
-import { CommonPTag, Space } from "../../constants/styles"
-import LoanEditing from "../loan/LoanEditing"
-import CreateProxy from "../loan/CreateProxy"
-import { Grid } from "theme-ui"
+import { MANAGE_LOAN_STAGE, manageLoanStage } from "../../recoil/atoms"
+import { FiltersWithPopular } from "../vaults-list/FiltersWithPopular"
+import { TagFilter } from "../../helpers/model"
+import { useTranslation } from "next-i18next"
+import { useRecoilState } from "recoil"
+import PUSDFilter from "./PUSDFilter"
+import Collateral from "./Collateral"
 
-const LoanDetail = () => {
-  const PUSDInfo = useMemo(
-    (): { label: string; value: string }[] => [
+const LoanDetailOverView = ({ loan }: { loan: string }) => {
+  const { t } = useTranslation()
+  const [tagFilter, setTagFilter] = useState<TagFilter>("pUSD")
+  const [manageStage, setManageState] = useRecoilState(manageLoanStage)
+
+  const options = useMemo(
+    (): { value: TagFilter; label: string }[] => [
       {
-        label: "available",
-        value: "1.08M pUSD",
+        value: "pUSD",
+        label: t("filters.pUSD"),
       },
       {
-        label: "liquidationRatio",
-        value: "150%",
-      },
-      {
-        label: "stabilityFee",
-        value: "4.05%",
-      },
-      {
-        label: "liquidationFee",
-        value: "13.06%",
-      },
-      {
-        label: "debtFloor",
-        value: "100 pUSD",
+        value: "collateral",
+        label: t("filters.collateral"),
       },
     ],
     [],
   )
 
+  const onTagChain = (tagFilter: TagFilter) => {
+    setTagFilter(tagFilter)
+    if (tagFilter === "pUSD") {
+      setManageState(MANAGE_LOAN_STAGE.editForm)
+    } else {
+      setManageState(MANAGE_LOAN_STAGE.editFormCollateral)
+    }
+  }
+
   return (
     <CreateContainer>
-      <TemplateCreate />
+      <TemplateCreate title={"ETH-1 Loan # " + loan} />
       <CreateCard>
-        <>
-          {/*<CreateLoanTitle title={`setUpLoad`} lead={`setUpLoanLead`} />*/}
-          <Space top={25} />
-          <LoanEditing />
-        </>
+        {(manageStage === MANAGE_LOAN_STAGE.editForm ||
+          manageStage === MANAGE_LOAN_STAGE.editFormCollateral) && (
+          <FiltersWithPopular
+            onTagChange={onTagChain}
+            tagFilter={tagFilter}
+            defaultTag={"pUSD"}
+            page={"Loan detail"}
+            searchPlaceholder={t("search-token")}
+            options={options}
+          />
+        )}
 
-        <Grid columns={[1]} sx={{ marginTop: "3" }}>
-          {PUSDInfo.map(({ label, value }, idx) => (
-            <Grid columns={["1fr 1fr"]} key={idx}>
-              <CommonPTag fSize={12} weight={400}>
-                {label}
-              </CommonPTag>
-              <CommonPTag fSize={12} weight={900} tAlign={`right`}>
-                {value}
-              </CommonPTag>
-            </Grid>
-          ))}
-        </Grid>
+        {tagFilter === "pUSD" && <PUSDFilter tagFilter={tagFilter} />}
+        {tagFilter === "collateral" && <Collateral tagFilter={tagFilter} />}
       </CreateCard>
     </CreateContainer>
   )
 }
 
-export default LoanDetail
+export default LoanDetailOverView
 
 //----------------------------
 const CreateContainer = styled.div`
@@ -72,7 +71,7 @@ const CreateContainer = styled.div`
 const CreateCard = styled.div`
   position: absolute;
   background-color: #3c2b6c;
-  min-height: 100%;
+  height: calc(100% + 15px);
   width: ${rem(350)};
   border-radius: ${rem(15)};
 
@@ -80,4 +79,6 @@ const CreateCard = styled.div`
   right: 10%;
 
   padding: ${rem(30)} ${rem(35)};
+
+  overflow-y: auto;
 `

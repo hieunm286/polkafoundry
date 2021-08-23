@@ -4,6 +4,7 @@ const silver = '#DADADA'
 const opaSilever = '#DADADA'
 const orange = '#F9B55E'
 const lightGreen = '#3EE9E8'
+const gray = '#8089A9'
 
 export {
   vanilla,
@@ -11,5 +12,6 @@ export {
   silver,
   opaSilever,
   orange,
-  lightGreen
+  lightGreen,
+  gray
 }

@@ -1,0 +1,34 @@
+{
+  "hello": "Xin chao",
+  "loan": "Loan",
+  "convertibles": "Convertibles",
+  "governance": "Governance",
+  "dot": "DOT",
+
+  "homepage": {
+    "bannerDescription": "The decentralized platform for pUSD - a cross-chain, multi-collateral stablecoin on Polkafoundry network",
+    "overview": "Overview",
+    "pUSDStable": "pUSD stablecoin protocol",
+    "introduceDes1": "PolkaFi is a project to implement a cross-chain, multi-collateral stablecoin on Polkafoundry network.",
+    "introduceDes2": "It aims towards a complete decentralized operation, where the stablecoin - pUSD is created using assets from blockchains connected to the Polkafoundry network as collaterals. It can be used by any blockchains and their applications on the Polkafoundry network.",
+    "introduceDes3": "Holders of the crypto assets supported by PolkaFi Platform can generate pUSD tokens by depositing the assets into a Collateralized Debt Position (CDP) through the pUSD stablecoin protocol. pUSD tokens are also available for purchases from brokers or exchanges.",
+    "pUSDStable2": "pUSD – The Stablecoin",
+    "tutorial": "Get pUSD by depositing crypto assets as collaterals",
+    "borrowPUSD": "Borrow pUSD",
+    "buyPUSD": "Buy pUSD"
+  },
+  "loanList": {
+    "title": "Borrow pUSD by depositing crypto assets as collaterals",
+    "lead": "Select an asset and loan type from list below",
+    "create": "Create a new Loan"
+  },
+  "system": {
+    "assets": "Assets",
+    "type": "Loan type",
+    "stabilityFee": "Stability Fee",
+    "liquidityRatio": "Liquidity Ratio",
+    "liquidityPenalty": "Liquidity Penalty",
+    "pUSDAvailable": "pUSD Available"
+  },
+  "empty": ""
+}

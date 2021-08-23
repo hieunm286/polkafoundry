@@ -1,22 +1,20 @@
 // @ts-ignore
-import { Icon } from '@makerdao/dai-ui-icons'
-import React, { memo, useCallback } from 'react'
-import ReactSelect from 'react-select'
+import { Icon } from "@makerdao/dai-ui-icons"
+import React, { memo, useCallback } from "react"
+import ReactSelect from "react-select"
 // @ts-ignore
-import { Box, Button, Flex, Input, SxStyleProp } from 'theme-ui'
-import {COIN_TAGS} from "../../constants/variables";
-import {TagFilter} from "../../helpers/model";
-import {useIntl} from "react-intl";
+import { Box, Button, Flex, Input, SxStyleProp } from "theme-ui"
+import { TagFilter } from "../../helpers/model"
 
 interface FiltersProps {
   onSearch?: (search: string) => void
   onTagChange: (tag: TagFilter) => void
   search?: string
-  defaultTag: string;
+  defaultTag?: string
   page: string
   tagFilter: TagFilter
   searchPlaceholder?: string
-  sx?: SxStyleProp;
+  sx?: SxStyleProp
   options: { value: TagFilter; label: string }[]
 }
 
@@ -29,7 +27,7 @@ function Filters_({
   page,
   searchPlaceholder,
   sx,
-  options
+  options,
 }: FiltersProps) {
   const onChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -43,17 +41,17 @@ function Filters_({
   const selected = options.find((option) => option.value === tagFilter)
 
   return (
-    <Flex sx={{ ...sx, flexDirection: ['column', 'column', 'row'], mb: 4 }}>
+    <Flex sx={{ ...sx, flexDirection: ["column", "column", "row"], mb: 4 }}>
       <Box
         sx={{
-          display: ['none', 'flex', 'flex'],
+          display: ["none", "flex", "flex"],
         }}
       >
         {options.map((option) => (
           <Button
             key={option.label}
             onClick={() => onTagChange(option.value)}
-            sx={{ mr: 0, backgroundColor: option.value === tagFilter ? '#F9B55E' : 'initial' }}
+            sx={{ mr: 0, backgroundColor: option.value === tagFilter ? "#F9B55E" : "initial" }}
             data-selected={option.value === tagFilter}
             variant="filter"
           >
@@ -64,7 +62,7 @@ function Filters_({
       <Box
         sx={{
           my: 2,
-          display: ['block', 'none', 'none'],
+          display: ["block", "none", "none"],
         }}
       >
         <ReactSelect
@@ -72,29 +70,31 @@ function Filters_({
           defaultValue={options[0]}
           options={options}
           isSearchable={false}
-          onChange={(option) => option && 'value' in option && onTagChange(option.value)}
+          onChange={(option) => option && "value" in option && onTagChange(option.value)}
           components={{
+            // eslint-disable-next-line react/display-name
             IndicatorsContainer: ({ selectProps: { menuIsOpen } }) => (
               <Flex
                 sx={{
-                  justifyContent: 'center',
-                  alignItems: 'center',
+                  justifyContent: "center",
+                  alignItems: "center",
                   mr: 3,
-                  transform: `rotate(${menuIsOpen ? '180deg' : 0})`,
-                  transition: 'transform 0.2s ease-in-out',
+                  transform: `rotate(${menuIsOpen ? "180deg" : 0})`,
+                  transition: "transform 0.2s ease-in-out",
                 }}
               >
                 <Icon name="chevron" />
               </Flex>
             ),
+            // eslint-disable-next-line react/display-name
             Control: ({ children, innerProps }) => (
               <Flex
                 sx={{
-                  border: 'light',
+                  border: "light",
                   px: 2,
                   py: 3,
-                  borderRadius: 'medium',
-                  cursor: 'pointer',
+                  borderRadius: "medium",
+                  cursor: "pointer",
                 }}
                 {...innerProps}
               >
@@ -104,48 +104,45 @@ function Filters_({
           }}
         />
       </Box>
-      {
-        search && onSearch && (
-          <Flex
+      {onSearch && (
+        <Flex
+          sx={{
+            variant: "forms.search",
+            borderColor: "universe",
+            width: ["100%", "100%", "313px"],
+            p: [2, 1, 1],
+            ml: "auto",
+            alignItems: "center",
+            mt: [3, 3, 0],
+            color: "text.shape",
+            "& input::placeholder": {
+              color: "text.shape",
+              fontWeight: "heading",
+            },
+            "&:focus-within": {
+              color: "text.shape",
+            },
+          }}
+        >
+          <Icon
             sx={{
-              variant: 'forms.search',
-              borderColor: 'universe',
-              width: ['100%', '100%', '313px'],
-              p: [2, 1, 1],
-              ml: 'auto',
-              alignItems: 'center',
-              mt: [3, 3, 0],
-              color: 'text.shape',
-              '& input::placeholder': {
-                color: 'text.shape',
-                fontWeight: 'heading',
-              },
-              '&:focus-within': {
-                color: 'text.shape',
-              },
+              position: "relative",
+              top: "6px",
+              ml: 3,
             }}
-          >
-            <Icon
-              sx={{
-                position: 'relative',
-                top: '6px',
-                ml: 3,
-              }}
-              name="search"
-              size="4"
-            />
-            <Input
-              sx={{ fontWeight: 'heading' }}
-              variant="plain"
-              onChange={onChange}
-              // onBlur={() => trackingEvents.searchToken(page, search)}
-              value={search}
-              placeholder={searchPlaceholder}
-            />
-          </Flex>
-        )
-      }
-
+            name="search"
+            size="4"
+          />
+          <Input
+            sx={{ fontWeight: "heading" }}
+            variant="plain"
+            onChange={onChange}
+            // onBlur={() => trackingEvents.searchToken(page, search)}
+            value={search}
+            placeholder={searchPlaceholder}
+          />
+        </Flex>
+      )}
     </Flex>
   )
 }

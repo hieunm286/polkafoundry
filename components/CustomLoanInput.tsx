@@ -1,37 +1,53 @@
-import React from "react"
+import React, { useMemo } from "react"
 import { Grid } from "theme-ui"
 import { CommonPTag, CommonSpanTag } from "../constants/styles"
 import styled from "styled-components"
-import { useRecoilState } from "recoil"
-import { inputValueCreateLoan } from "../recoil/atoms"
-import {orange, vanilla} from "../constants/color"
-import {rem} from "../helpers/common-function";
+import { gray, orange, vanilla } from "../constants/color"
+import {formatInputNumber, rem} from "../helpers/common-function"
 
-interface CustomLoanInput {
+interface CustomLoanInputProp {
+  value: string
+  onChange: (e: any) => void
   action?: string
   walletLabel: string
+  maxValue: string
+  token: string
+  showExchangeUSDT?: boolean
+  disabled?: boolean
+  showMax?: boolean
 }
 
-const CustomLoanInput: React.FC<CustomLoanInput> = (props) => {
-  const { action, walletLabel } = props
-  const [value, setValue] = useRecoilState(inputValueCreateLoan)
+const CustomLoanInput: React.FC<CustomLoanInputProp> = (props) => {
+  const {
+    action,
+    walletLabel,
+    value,
+    onChange,
+    maxValue,
+    token,
+    showExchangeUSDT = true,
+    disabled = false,
+    showMax = true,
+  } = props
+
+  const mainColor = useMemo((): string => (disabled ? gray : "#FFFFFF"), [disabled])
 
   return (
-    <div>
+    <Container disabled={disabled}>
       <Grid columns={["1fr 2fr"]}>
         <div>
           {action && (
-            <CommonPTag fSize={12} fColor={"white"} weight={700}>
+            <CommonPTag fSize={12} fColor={mainColor} weight={700}>
               {action}
             </CommonPTag>
           )}
         </div>
         <WalletLabelGroup>
-          <CommonSpanTag fSize={12} weight={400}>
+          <CommonSpanTag fSize={12} weight={400} fColor={mainColor}>
             {walletLabel}
           </CommonSpanTag>
-          <CommonSpanTag fSize={12} weight={700}>
-            600 pUSD
+          <CommonSpanTag fSize={12} weight={700} fColor={mainColor} m={`0 0 0 10px`}>
+            {formatInputNumber(maxValue)} {token}
           </CommonSpanTag>
         </WalletLabelGroup>
       </Grid>
@@ -41,22 +57,41 @@ const CustomLoanInput: React.FC<CustomLoanInput> = (props) => {
           borderBottom: "1px solid",
           borderColor: vanilla,
           alignItems: "center",
-          paddingBottom: 2
+          paddingBottom: 2,
         }}
       >
         <Grid gap={0}>
           <InputBlock>
-            <InputAmount value={value} onChange={(e) => setValue(e.target.value)} placeholder={`0 ETH`} />
-            <CommonPTag fSize={12} weight={400} fColor={vanilla}>~0.00USDT</CommonPTag>
+            <InputAmount
+              value={value}
+              onChange={onChange}
+              placeholder={`0 ${token}`}
+              fColor={mainColor}
+              disabled={disabled}
+            />
+            {showExchangeUSDT && (
+              <CommonPTag fSize={12} weight={400} fColor={vanilla}>
+                ~0.00USDT
+              </CommonPTag>
+            )}
           </InputBlock>
         </Grid>
-        <CommonPTag fSize={12} weight={700} fColor={orange}>MAX</CommonPTag>
+        {showMax && (
+          <CommonPTag fSize={12} weight={700} fColor={orange}>
+            MAX
+          </CommonPTag>
+        )}
       </Grid>
-    </div>
+    </Container>
   )
 }
 
 export default CustomLoanInput
+
+const Container = styled.div<{ disabled?: boolean }>`
+  cursor: ${(props) => (props.disabled ? "not-allowed" : "initial")};
+  pointer-events: ${(props) => (props.disabled ? "none" : "initial")};
+`
 
 const WalletLabelGroup = styled.p`
   text-align: right;
@@ -67,15 +102,16 @@ const InputBlock = styled.div`
   //border-bottom: 1px solid ${vanilla};
 `
 
-const InputAmount = styled.input`
+const InputAmount = styled.input<{ fColor: string; disabled: boolean }>`
   border: none;
   background-color: transparent;
   height: ${rem(40)};
   font-size: ${rem(24)};
-  color: white;
+  color: ${(props) => props.fColor};
+
   &::placeholder {
     font-size: ${rem(24)};
-    color: white;
+    color: ${(props) => props.fColor};
   }
 
   &:focus,

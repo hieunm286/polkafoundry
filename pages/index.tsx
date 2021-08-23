@@ -1,17 +1,22 @@
-import Head from 'next/head'
-import Image from 'next/image'
-import styles from '../styles/Home.module.css'
-import LandingTemplate from "../features/landing/LandingTemplate";
-import Layout from "../components/Layout";
+import LandingTemplate from "../features/landing/LandingTemplate"
+import Layout from "../components/Layout"
+import { serverSideTranslations } from "next-i18next/serverSideTranslations"
+
+export const getStaticProps = async ({ locale }: { locale: string }) => ({
+  props: {
+    ...(await serverSideTranslations(locale, ["common"])),
+  },
+})
 
 const LandingPage = () => {
   return (
-      <>
-          <LandingTemplate />
-      </>
+    <>
+      <LandingTemplate />
+    </>
   )
 }
 
-LandingPage.layout = page => <Layout>{page}</Layout>
+// eslint-disable-next-line react/display-name
+LandingPage.getLayout = (page) => <Layout noLayout>{page}</Layout>
 
 export default LandingPage

@@ -4,5 +4,6 @@
   "semi": false,
   "singleQuote": false,
   "trailingComma": "all",
-  "proseWrap": "always"
+  "proseWrap": "always",
+  "bracketSpacing": true
 }

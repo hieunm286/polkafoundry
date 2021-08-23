@@ -1,10 +1,10 @@
 // @ts-ignore
 import { Icon } from "@makerdao/dai-ui-icons"
-import React, { HTMLProps, memo, ReactNode, useCallback } from 'react'
+import React, { HTMLProps, memo, ReactNode, useCallback } from "react"
 // @ts-ignore
-import { Box, Button, Container, SxStyleProp } from 'theme-ui'
-import {Direction} from "../helpers/model";
-import {useIntl} from "react-intl";
+import { Box, Button, Container, SxStyleProp } from "theme-ui"
+import { Direction } from "../helpers/model"
+import { useTranslation } from "next-i18next"
 
 export interface ColumnDef<T, S> {
   headerLabel: string
@@ -29,18 +29,18 @@ export function TableContainer({
   return (
     <Container
       sx={{
-        display: ['flex', 'table'],
+        display: ["flex", "table"],
         p: 0,
-        borderCollapse: 'separate',
-        borderSpacing: '0 9px',
+        borderCollapse: "separate",
+        borderSpacing: "0 9px",
         ...sx,
       }}
       as="table"
     >
-      <Box sx={{ display: ['none', 'table-header-group'] }} as="thead">
+      <Box sx={{ display: ["none", "table-header-group"] }} as="thead">
         <Box as="tr">{header}</Box>
       </Box>
-      <Box sx={{ width: '100%' }} as="tbody">
+      <Box sx={{ width: "100%" }} as="tbody">
         {children}
       </Box>
     </Container>
@@ -72,23 +72,23 @@ function Row({
   return (
     <Box
       sx={{
-        display: ['flex', 'table-row'],
+        display: ["flex", "table-row"],
         mb: 3,
-        flexDirection: 'column',
-        boxShadow: 'table',
-        background: 'white',
-        borderRadius: '8px',
+        flexDirection: "column",
+        boxShadow: "table",
+        background: "white",
+        borderRadius: "8px",
         transition: `
           transform 0.2s ease-in-out,
           box-shadow 0.2s ease-in-out
           `,
-        cursor: href ? 'pointer' : 'initial',
+        cursor: href ? "pointer" : "initial",
         ...sx,
         ...(href
           ? {
-              '&:hover': {
-                boxShadow: ['table', 'table_hovered'],
-                transform: ['none', 'scaleX(0.99)'],
+              "&:hover": {
+                boxShadow: ["table", "table_hovered"],
+                transform: ["none", "scaleX(0.99)"],
               },
             }
           : {}),
@@ -109,20 +109,20 @@ function Cell({
   sx,
   ...props
 }: React.PropsWithChildren<{ sx?: SxStyleProp } & HTMLProps<HTMLTableCellElement>> & any) {
-    console.log(children)
+  console.log(children)
   return (
     <Box
       sx={{
         p: 3,
-        ':first-child': {
-          borderRadius: '8px 0 0 8px',
+        ":first-child": {
+          borderRadius: "8px 0 0 8px",
         },
-        ':last-child': {
-          borderRadius: '0 8px 8px 0',
+        ":last-child": {
+          borderRadius: "0 8px 8px 0",
         },
-          backgroundColor: '#3C2B6C',
-            color: 'white',
-          ...sx,
+        backgroundColor: "#3C2B6C",
+        color: "white",
+        ...sx,
       }}
       {...props}
       as="td"
@@ -138,9 +138,9 @@ function Header({ children, sx }: React.PropsWithChildren<{ sx?: SxStyleProp }>)
       variant="paragraph2"
       sx={{
         px: 3,
-        color: 'text.contrast',
+        color: "text.contrast",
         fontSize: 2,
-        textAlign: 'left',
+        textAlign: "left",
         ...sx,
       }}
       as="th"
@@ -150,6 +150,7 @@ function Header({ children, sx }: React.PropsWithChildren<{ sx?: SxStyleProp }>)
   )
 }
 
+// eslint-disable-next-line react/display-name
 const TableRow = memo(
   <T extends {}>({
     row,
@@ -160,21 +161,21 @@ const TableRow = memo(
     columns: ColumnDef<any, any>[]
     rowProps?: RowProps
   }) => {
-    const { formatMessage } = useIntl()
-      console.log(columns)
+    const { t } = useTranslation()
+    console.log(columns)
     return (
       <Row {...(rowProps || {})}>
         {columns.map(({ cell: Content, headerLabel }, idx) => (
           <Cell
             sx={{
-              display: ['flex', 'table-cell'],
-              justifyContent: 'space-between',
-              ':before': {
-                variant: 'text.paragraph2',
-                fontWeight: 'semiBold',
-                color: 'text.muted',
-                content: `"${formatMessage({ id: headerLabel })}"`,
-                display: ['block', 'none'],
+              display: ["flex", "table-cell"],
+              justifyContent: "space-between",
+              ":before": {
+                variant: "text.paragraph2",
+                fontWeight: "semiBold",
+                color: "text.muted",
+                content: `"${t(headerLabel)}"`,
+                display: ["block", "none"],
               },
             }}
             key={idx}
@@ -195,20 +196,20 @@ export function Table<T extends Record<K, string>, K extends keyof T, S>({
   noResults,
   deriveRowProps,
 }: TableProps<T, K, S>) {
-    const { formatMessage } = useIntl()
+  const { t } = useTranslation()
 
   return (
     <TableContainer
       header={columns.map(({ header: HeaderComponent, headerLabel }) => (
         <Header key={headerLabel}>
-          <HeaderComponent {...state} label={formatMessage({ id: headerLabel })} />
+          <HeaderComponent {...state} label={t(headerLabel)} />
         </Header>
       ))}
     >
       {noResults && data.length === 0 ? (
-        <Row sx={{ background: 'none' }}>
+        <Row sx={{ background: "none" }}>
           <Cell colSpan={columns.length}>
-            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
               {noResults}
             </Box>
           </Cell>
@@ -230,8 +231,9 @@ export function Table<T extends Record<K, string>, K extends keyof T, S>({
 interface Sort<K extends string> {
   sortBy: K | undefined
   direction: Direction
-  change: (ch: { kind: 'sortBy'; sortBy: K | undefined }) => void
+  change: (ch: { kind: "sortBy"; sortBy: K | undefined }) => void
 }
+
 export function TableSortHeader<K extends string>({
   children,
   filters,
@@ -242,23 +244,23 @@ export function TableSortHeader<K extends string>({
   return (
     <Button
       sx={{
-        visibility: ['hidden', 'visible'],
-        display: ['none', 'flex'],
-        alignItems: 'center',
+        visibility: ["hidden", "visible"],
+        display: ["none", "flex"],
+        alignItems: "center",
         ...sx,
       }}
       variant="tableHeader"
-      onClick={() => filters.change({ kind: 'sortBy', sortBy })}
+      onClick={() => filters.change({ kind: "sortBy", sortBy })}
     >
-      <Box sx={{ whiteSpace: 'nowrap', color: isSelected ? 'primary' : 'text.muted' }}>
+      <Box sx={{ whiteSpace: "nowrap", color: isSelected ? "primary" : "text.muted" }}>
         {children}
       </Box>
       <Box>
         <Icon
-          sx={{ ml: 1, display: 'flex', width: 1 }}
+          sx={{ ml: 1, display: "flex", width: 1 }}
           size={12}
-          name={filters.direction === 'ASC' && isSelected ? 'chevron_up' : 'chevron_down'}
-          color={isSelected ? 'primary' : 'text.muted'}
+          name={filters.direction === "ASC" && isSelected ? "chevron_up" : "chevron_down"}
+          color={isSelected ? "primary" : "text.muted"}
         />
       </Box>
     </Button>

@@ -1,20 +1,24 @@
 import React, { useMemo, useState } from "react"
 import styled from "styled-components"
 import { rem } from "../helpers/common-function"
-import {FormattedMessage, useIntl} from "react-intl"
-import {CommonPTag, CommonSpanTag, DEFAULT_DEVICE, defaultBg, Space} from "../constants/styles"
+import { CommonPTag, CommonSpanTag, DEFAULT_DEVICE, defaultBg, Space } from "../constants/styles"
 import { fire, lightGreen, orange, silver, vanilla } from "../constants/color"
-import { Link } from "react-router-dom"
 import { FiltersWithPopular } from "../features/vaults-list/FiltersWithPopular"
-import {LoanDetail, LoanHistory, TagFilter} from "../helpers/model"
-import {COIN_TAGS, loadDetailTest} from "../constants/variables"
-import {Box, Button, Grid, Text} from "theme-ui"
-import {ColumnDef, Table} from "./Table";
-import moment from "moment";
+import { LoanDetail, LoanHistory, TagFilter } from "../helpers/model"
+import { loadDetailTest } from "../constants/variables"
+import { Box, Grid, Text } from "theme-ui"
+import { ColumnDef, Table } from "./Table"
+import moment from "moment"
+import Link from "next/link"
+import { Trans, useTranslation } from "next-i18next"
+
+interface TemplateProp {
+  title: string
+}
 
 const loanHistoryColumn: ColumnDef<LoanHistory, any>[] = [
   {
-    headerLabel: 'table.action',
+    headerLabel: "table.action",
     header: (abc) => {
       console.log(abc)
       return <p>{abc.label}</p>
@@ -22,33 +26,36 @@ const loanHistoryColumn: ColumnDef<LoanHistory, any>[] = [
     cell: ({ action }) => <>{action}</>,
   },
   {
-    headerLabel: 'table.amount',
+    headerLabel: "table.amount",
     header: ({ label }) => <p>{label}</p>,
     cell: ({ amount, token }) => (
       <>
-        <CommonSpanTag fSize={16} weight={500}>{amount}</CommonSpanTag> {token && <CommonSpanTag fSize={16} weight={500}>{token}</CommonSpanTag>}
+        <CommonSpanTag fSize={16} weight={500}>
+          {amount}
+        </CommonSpanTag>{" "}
+        {token && (
+          <CommonSpanTag fSize={16} weight={500}>
+            {token}
+          </CommonSpanTag>
+        )}
       </>
     ),
   },
   {
-    headerLabel: 'table.time',
-    header: ({ label }) => (
-      <p>{label}</p>
-    ),
-    cell: ({ time }) => (
-      <Text sx={{ textAlign: 'right' }}>{moment(new Date()).format('DD/MM/YYYY HH:ss')}</Text>
+    headerLabel: "table.time",
+    header: ({ label }) => <p>{label}</p>,
+    cell: () => (
+      <Text sx={{ textAlign: "right" }}>{moment(new Date()).format("DD/MM/YYYY HH:ss")}</Text>
     ),
   },
   {
-    headerLabel: 'table.txtHash',
+    headerLabel: "table.txtHash",
     header: ({ label }) => <Text>{label}</Text>,
-    cell: ({ ilk }: any) => (
-      <Box sx={{ flexGrow: 1, textAlign: 'right' }}>
-        <Link
-          to={`/`}
-        >
+    cell: () => (
+      <Box sx={{ flexGrow: 1, textAlign: "right" }}>
+        <Link href={`/`}>
           <CommonPTag fSize={16} fColor={lightGreen} weight={500}>
-            <FormattedMessage id={'viewOnPolkadot'} />
+            <Trans i18nKey={"viewOnPolkadot"} />
           </CommonPTag>
         </Link>
       </Box>
@@ -56,9 +63,11 @@ const loanHistoryColumn: ColumnDef<LoanHistory, any>[] = [
   },
 ]
 
-const TemplateCreate = () => {
-  const { formatMessage } = useIntl()
+const TemplateCreate: React.FC<TemplateProp> = ({ title }) => {
+  const { t } = useTranslation()
   const [tagFilter, setTagFilter] = useState<TagFilter>("loanDetail")
+
+  console.log("render")
 
   const onTagChain = (tagFilter: TagFilter) => {
     setTagFilter(tagFilter)
@@ -67,43 +76,43 @@ const TemplateCreate = () => {
   const options: { value: TagFilter; label: string }[] = [
     {
       value: "loanDetail",
-      label: formatMessage({ id: "filters.loanDetail" }),
+      label: t("filters.loanDetail"),
     },
     {
       value: "loanHistory",
-      label: formatMessage({ id: "filters.loanHistory" }),
+      label: t("filters.loanHistory"),
     },
   ]
 
   const loanDetail = useMemo(
     (): LoanDetail[] => [
       {
-        label: formatMessage({ id: "loanDetail.outstandingDebt" }),
+        label: t("loanDetail.outstandingDebt"),
         value: 51,
         token: "pUSD",
       },
       {
-        label: formatMessage({ id: "loanDetail.availableToBorrow" }),
+        label: t("loanDetail.availableToBorrow"),
         value: 51,
         token: "pUSD",
       },
       {
-        label: formatMessage({ id: "loanDetail.availableToWithDraw" }),
+        label: t("loanDetail.availableToWithDraw"),
         value: 51,
         token: "pUSD",
       },
       {
-        label: formatMessage({ id: "loanDetail.liquidationRatio" }),
+        label: t("loanDetail.liquidationRatio"),
         value: 51,
         token: "pUSD",
       },
       {
-        label: formatMessage({ id: "loanDetail.stabilityFee" }),
+        label: t("loanDetail.stabilityFee"),
         value: 51,
         token: "pUSD",
       },
       {
-        label: formatMessage({ id: "loanDetail.liquidationFee" }),
+        label: t("loanDetail.liquidationFee"),
         value: 51,
         token: "pUSD",
       },
@@ -113,52 +122,52 @@ const TemplateCreate = () => {
 
   return (
     <Container>
-      <Title>{formatMessage({ id: "Create new ETH-1 Loan" })}</Title>
+      <Title>{t(title)}</Title>
       <PriceLayout>
-      <Grid gap={2} columns={[1, "2fr 2fr"]}>
-        <div>
-          <CommonPTag fSize={16} fColor={vanilla} weight={500}>
-            {formatMessage({ id: "liquidationPrice" })}
-          </CommonPTag>
-          <CommonPTag fSize={48} fColor={fire} weight={700}>
-            $1,500.05
-          </CommonPTag>
-          <CommonPTag fSize={16} fColor={silver} weight={500} m={"40px 0 0"}>
-            {formatMessage({ id: "currentETHPrice" })}
-          </CommonPTag>
-          <CommonPTag fSize={20} fColor={"white"} weight={500}>
-            $2,300.05
-          </CommonPTag>
-          <CommonPTag fSize={16} fColor={silver} weight={400} m={"7px 0 0"}>
-            {formatMessage({ id: "nextPriceIn" })}
-          </CommonPTag>
-          <CommonPTag fSize={14} fColor={silver} weight={400}>
-            $2,100.05
-          </CommonPTag>
-          <Link to={""}>
-            <CommonPTag fSize={14} fColor={orange} weight={500} m={"10px 0 0 0"}>
-              {formatMessage({ id: "goToOraclePrice" })}
+        <Grid gap={2} columns={[1, "2fr 2fr"]}>
+          <div>
+            <CommonPTag fSize={16} fColor={vanilla} weight={500}>
+              {t("liquidationPrice")}
             </CommonPTag>
-          </Link>
-        </div>
-        <div>
-          <CommonPTag fSize={16} fColor={vanilla} weight={500}>
-            {formatMessage({ id: "liquidationPrice" })}
-          </CommonPTag>
-          <CommonPTag fSize={48} fColor={lightGreen} weight={700}>
-            350.08%
-          </CommonPTag>
-          <CommonPTag fSize={16} fColor={silver} weight={500} m={"40px 0 0"}>
-            {formatMessage({ id: "collateralLocked" })}
-          </CommonPTag>
-          <CommonPTag fSize={20} fColor={"white"} weight={500}>
-            0.9005 ETH
-          </CommonPTag>
-          <CommonPTag fSize={14} fColor={silver} weight={400} m={"10px 0 0 0"}>
-            ~ $2,100.08
-          </CommonPTag>
-        </div>
-      </Grid>
+            <CommonPTag fSize={48} fColor={fire} weight={700}>
+              $1,500.05
+            </CommonPTag>
+            <CommonPTag fSize={16} fColor={silver} weight={500} m={"40px 0 0"}>
+              {t("currentETHPrice")}
+            </CommonPTag>
+            <CommonPTag fSize={20} fColor={"white"} weight={500}>
+              $2,300.05
+            </CommonPTag>
+            <CommonPTag fSize={16} fColor={silver} weight={400} m={"7px 0 0"}>
+              {t("nextPriceIn")}
+            </CommonPTag>
+            <CommonPTag fSize={14} fColor={silver} weight={400}>
+              $2,100.05
+            </CommonPTag>
+            <Link href={""}>
+              <CommonPTag fSize={14} fColor={orange} weight={500} m={"10px 0 0 0"}>
+                {t("goToOraclePrice")}
+              </CommonPTag>
+            </Link>
+          </div>
+          <div>
+            <CommonPTag fSize={16} fColor={vanilla} weight={500}>
+              {t("liquidationPrice")}
+            </CommonPTag>
+            <CommonPTag fSize={48} fColor={lightGreen} weight={700}>
+              350.08%
+            </CommonPTag>
+            <CommonPTag fSize={16} fColor={silver} weight={500} m={"40px 0 0"}>
+              {t("collateralLocked")}
+            </CommonPTag>
+            <CommonPTag fSize={20} fColor={"white"} weight={500}>
+              0.9005 ETH
+            </CommonPTag>
+            <CommonPTag fSize={14} fColor={silver} weight={400} m={"10px 0 0 0"}>
+              ~ $2,100.08
+            </CommonPTag>
+          </div>
+        </Grid>
       </PriceLayout>
       <Space top={60} />
       <LoanInfo>
@@ -167,7 +176,7 @@ const TemplateCreate = () => {
           tagFilter={tagFilter}
           defaultTag="loanDetail"
           page={"Landing"}
-          searchPlaceholder={formatMessage({ id: "search-token" })}
+          searchPlaceholder={t("search-token")}
           options={options}
         />
         <Space top={20} />
@@ -180,7 +189,14 @@ const TemplateCreate = () => {
                   {label}
                 </CommonPTag>
                 <Box key={label}>
-                  <CommonSpanTag fSize={16} weight={500}>{value}</CommonSpanTag> {token && <CommonSpanTag fSize={16} weight={500}>{token}</CommonSpanTag>}
+                  <CommonSpanTag fSize={16} weight={500}>
+                    {value}
+                  </CommonSpanTag>{" "}
+                  {token && (
+                    <CommonSpanTag fSize={16} weight={500}>
+                      {token}
+                    </CommonSpanTag>
+                  )}
                 </Box>
                 <Space top={40} />
               </Grid>
@@ -188,21 +204,19 @@ const TemplateCreate = () => {
           </Grid>
         )}
 
-        {
-          tagFilter === "loanHistory" && (
-            <Table
-              data={loadDetailTest}
-              primaryKey={'txtHash'}
-              state={{ search: "", tagFilter: "loanHistory" }}
-              columns={loanHistoryColumn}
-              noResults={<></>}
-              deriveRowProps={(row) => ({
-                // href: row.ilkDebtAvailable.isZero() ? undefined : `/vaults/open/${row.ilk}`,
-                // onClick: () => trackingEvents.openVault(Pages.LandingPage, row.ilk),
-              })}
-            />
-          )
-        }
+        {tagFilter === "loanHistory" && (
+          <Table
+            data={loadDetailTest}
+            primaryKey={"txtHash"}
+            state={{ search: "", tagFilter: "loanHistory" }}
+            columns={loanHistoryColumn}
+            noResults={<></>}
+            //  deriveRowProps={(row) => ({
+            //    // href: row.ilkDebtAvailable.isZero() ? undefined : `/vaults/open/${row.ilk}`,
+            //    // onClick: () => trackingEvents.openVault(Pages.LandingPage, row.ilk),
+            // )}
+          />
+        )}
       </LoanInfo>
     </Container>
   )
@@ -243,7 +257,7 @@ const PriceLayout = styled.div`
   background: url("/images/background/stars1.jpeg") top left;
   background-size: cover;
   background-color: ${defaultBg};
-  
+
   padding: ${rem(36)} ${rem(50)};
   //display: flex;
   //justify-content: space-between;
@@ -251,7 +265,7 @@ const PriceLayout = styled.div`
 
   //border: 1px solid ${vanilla};
   border-radius: ${rem(20)};
-  
+
   @media ${DEFAULT_DEVICE.tablet} {
     width: 90%;
   }
@@ -261,6 +275,6 @@ const LoanInfo = styled.div`
   width: 65%;
 `
 
-const Liquidation = styled.div``
+// const Liquidation = styled.div``
 
-const CollaterizationRatio = styled.div``
+// const CollaterizationRatio = styled.div``
