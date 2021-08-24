@@ -1,5 +1,18 @@
 import type { ElementOf } from "ts-essentials"
 import { LoanHistory } from "../helpers/model"
+import { BigNumber } from "bignumber.js"
+import mcdOsmAbi from "../blockchain/abi/mcd-osm.json"
+import { default as kovan } from "../blockchain/addresses/kovan.json"
+import { default as polkadot } from "../blockchain/addresses/polkadot.json"
+import { default as moonbeam } from "../blockchain/addresses/moonbeam.json"
+
+export const WAD = new BigNumber("1e18")
+export const RAY = new BigNumber("1e27")
+export const RAD = new BigNumber("1e45")
+
+export const HOUR = 60 * 60
+export const DAY = 24 * HOUR
+export const SECONDS_PER_YEAR = 365 * DAY
 
 export const test = [
   {
@@ -54,7 +67,28 @@ export const loadDetailTest: LoanHistory[] = [
 ]
 
 export const MaxUint =
-  "115792089237316195423570985008687907853269984665640564039457584007913129639935";
+  "115792089237316195423570985008687907853269984665640564039457584007913129639935"
 
 export const COIN_TAGS = ["stablecoin", "lp-token"] as const
 export type CoinTag = ElementOf<typeof COIN_TAGS>
+
+export const MULTICHAIN = {
+  kovan: {
+    ...kovan
+  },
+  polka: {
+    ...polkadot
+  },
+  moonbeam: {
+    ...moonbeam
+  }
+}
+
+export const mcdData = (network = 'moonbeam') => {
+  return {
+    ETH: {
+      abi: mcdOsmAbi,
+      address: MULTICHAIN[network].PIP_ETH
+    }
+  }
+}

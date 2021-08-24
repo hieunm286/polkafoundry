@@ -1,87 +1,106 @@
-import React, { useCallback, useState } from "react"
-import { Box, Grid, Text } from "theme-ui"
+import React, { useCallback, useEffect, useState } from "react"
+import { Box, Flex, Grid, Text } from "theme-ui"
 import TemplateListing from "../../components/TemplateListing"
 import { TagFilter } from "../../helpers/model"
 import { test } from "../../constants/variables"
 import { Trans, useTranslation } from "next-i18next"
 import Link from "next/link"
-import { rem } from "../../helpers/common-function"
+import {
+  formatCryptoBalance,
+  formatFiatBalance,
+  formatPercent,
+  rem,
+} from "../../helpers/common-function"
 import { CommonPTag, DEFAULT_DEVICE, Space } from "../../constants/styles"
 import styled from "styled-components"
 import { CREATE_LOAN_STAGE } from "../../recoil/atoms"
 import LoanEditing from "../loan/LoanEditing"
 import CreateProxy from "../loan/CreateProxy"
-import { Table } from "../../components/Table"
+import { ColumnDef, Table, TableSortHeader } from "../../components/Table"
 import { FiltersWithPopular } from "../vaults-list/FiltersWithPopular"
 import { Chart } from "react-google-charts"
 import { lightGreen, orange } from "../../constants/color"
+import { fetchAllLoansByAddress } from "./LoanOverviewHandle"
+import { getToken } from "../../blockchain/tokensMetadata"
+import { Icon } from "@makerdao/dai-ui-icons"
+import {filterByTag} from "../../helpers/ilks";
 
-const ilksColumns: any = [
+const vaultsColumns: ColumnDef<any, any>[] = [
   {
-    headerLabel: "system.assets",
-    header: (abc: any) => {
-      console.log(abc)
-      return <p>{abc.label}</p>
+    headerLabel: "system.asset",
+    header: ({ label }) => <Text variant="tableHead">{label}</Text>,
+    cell: ({ ilk, token }) => {
+      // const tokenInfo = getToken(token)
+      return (
+        <Flex>
+          {/*<Icon name={tokenInfo.iconCircle} size="26px" sx={{ verticalAlign: "sub", mr: 2 }} />*/}
+          <Box sx={{ whiteSpace: "nowrap" }}>{ilk}</Box>
+        </Flex>
+      )
     },
-    cell: ({ name }: any) => <>{name}</>,
   },
   {
-    headerLabel: "system.type",
-    header: ({ label }: any) => <p>{label}</p>,
-    cell: ({ ilk }: any) => <Text>{ilk}</Text>,
-  },
-  {
-    headerLabel: "system.stabilityFee",
-    header: ({ label }: any) => (
-      // <TableSortHeader sx={{ ml: 'auto' }} filters={filters as any} sortBy="ilkDebtAvailable">
-      <p>{label}</p>
-      // </TableSortHeader>
+    headerLabel: "system.vault-id",
+    header: ({ label, ...filters }) => (
+      <Text variant="tableHead">{label}</Text>
     ),
-    cell: ({ price }: any) => <Text sx={{ textAlign: "right" }}>{price}</Text>,
+    cell: ({ id }) => <Text sx={{ textAlign: "right" }}>#{id.toString()}</Text>,
   },
   {
-    headerLabel: "system.liquidityRatio",
-    header: ({ label }: any) => (
-      // <TableSortHeader sx={{ ml: 'auto' }} filters={filters as any} sortBy="ilkDebtAvailable">
-      <p>{label}</p>
-      // </TableSortHeader>
+    headerLabel: "system.liquidation-price",
+    header: ({ label, ...filters }) => (
+      <Text variant="tableHead">{label}</Text>
     ),
-    cell: ({ price }: any) => <Text sx={{ textAlign: "right" }}>{price}</Text>,
+    cell: ({ liquidationPrice }) => (
+      <Text sx={{ textAlign: "right" }}>${formatFiatBalance(liquidationPrice)}</Text>
+    ),
   },
   {
-    headerLabel: "system.liquidityPenalty",
-    header: ({ label }: any) => (
-      // <TableSortHeader sx={{ ml: 'auto' }} filters={filters as any} sortBy="ilkDebtAvailable">
-      <p>{label}</p>
-      // </TableSortHeader>
+    headerLabel: "system.coll-ratio",
+    header: ({ label, ...filters }) => (
+      <Text variant="tableHead">{label}</Text>
     ),
-    cell: ({ price }: any) => <Text sx={{ textAlign: "right" }}>{price}</Text>,
+    cell: (vault) => {
+      return (
+        <Text sx={{ textAlign: "right", color: vault.atRiskLevelDanger ? "onError" : "onSuccess" }}>
+          {formatPercent(vault.collateralizationRatio.times(100))}
+        </Text>
+      )
+    },
   },
   {
-    headerLabel: "system.pUSDAvailable",
-    header: ({ label }: any) => (
-      // <TableSortHeader sx={{ ml: 'auto' }} filters={filters as any} sortBy="ilkDebtAvailable">
-      <p>{label}</p>
-      // </TableSortHeader>
+    headerLabel: "system.coll-locked",
+    header: ({ label, ...filters }) => (
+      <Text variant="tableHead">{label}</Text>
     ),
-    cell: ({ price }: any) => <Text sx={{ textAlign: "right" }}>{price}</Text>,
+    cell: ({ lockedCollateral, token }) => (
+      <Text sx={{ textAlign: "right" }}>
+        {formatCryptoBalance(lockedCollateral)} {token}
+      </Text>
+    ),
   },
   {
-    headerLabel: "empty",
-    header: () => null,
-    cell: ({ ilk }: any) => (
-      <Box sx={{ flexGrow: 1, textAlign: "right" }}>
-        {/*<div style={{ maxWidth: 100 }}>*/}
-        <Link href={`/vaults/open/${ilk}`}>
-          <Button variant="secondary" sx={{ width: "100%", maxWidth: ["100%", "150px"] }}>
-            <Text>
-              <Trans i18nKey="manageLoan" />
-            </Text>
-          </Button>
-        </Link>
-        {/*</div>*/}
-      </Box>
+    headerLabel: "system.dai-debt",
+    header: ({ label, ...filters }) => (
+      <TableSortHeader sx={{ ml: "auto" }} filters={filters} sortBy="debt">
+        {label}
+      </TableSortHeader>
     ),
+    cell: ({ debt }) => <Text sx={{ textAlign: "right" }}>{formatCryptoBalance(debt)} DAI</Text>,
+  },
+  {
+    headerLabel: "",
+    header: () => <Text />,
+    cell: ({ id }) => {
+      const { t } = useTranslation()
+      return (
+        <Box sx={{ flexGrow: 1, textAlign: "right" }}>
+          <Link as={`/${id}`} href={`/[loan]`}>
+            {t("manage-vault.action")}
+          </Link>
+        </Box>
+      )
+    },
   },
 ]
 
@@ -103,7 +122,12 @@ const chartLegends = [
 const LoanOverview = ({ address }: { address: string }) => {
   const [searchText, setSearchtext] = useState<string>("")
   const [tagFilter, setTagFilter] = useState<TagFilter>()
+  const [loanData, setLoanData] = useState<any>([])
   const { t } = useTranslation()
+
+  useEffect(() => {
+    void fetchAllLoansByAddress(address).then(setLoanData)
+  }, [])
 
   const onSearch = (value: string) => {
     setSearchtext(value)
@@ -123,7 +147,9 @@ const LoanOverview = ({ address }: { address: string }) => {
       label: t("filters.stablecoin"),
     },
   ]
-  const FILTER_TOKEN = test.filter((token) => token.name.indexOf(searchText) !== -1)
+  const FILTER_TOKEN = filterByTag(loanData, tagFilter).filter((token) => {
+    return token.ilk.indexOf(searchText) !== -1
+  })
 
   const RenderChart = useCallback(() => {
     return (
@@ -134,9 +160,9 @@ const LoanOverview = ({ address }: { address: string }) => {
         loader={<div>Loading Chart</div>}
         data={[
           ["Token", "Loan Ratio"],
-          ["ETH", 4],
-          ["BTC", 4],
-          ["LINK", 2],
+          ["ETH", 1],
+          ["BTC", 0],
+          ["LINK", 0],
         ]}
         options={{
           title: "",
@@ -170,9 +196,10 @@ const LoanOverview = ({ address }: { address: string }) => {
         paddingTop: 15,
       }}
     >
-      <Grid>
+      <Box sx={{ minHeight: '100vh' }}>
+        {/*<HeaderLeft>*/}
         <Header />
-        <Space />
+        <Space top={30} />
         <FiltersWithPopular
           onSearch={onSearch}
           search={searchText}
@@ -183,20 +210,25 @@ const LoanOverview = ({ address }: { address: string }) => {
           searchPlaceholder={t("search-token")}
           options={options}
         />
+        {/*</HeaderLeft>*/}
         <DisplayTable>
           <Table
             data={FILTER_TOKEN}
             state={{ search: "", tagFilter: "all-assets" }}
-            primaryKey={"ilk"}
-            columns={ilksColumns}
-            noResults={<></>}
-            deriveRowProps={() => ({
-              // href: row.ilkDebtAvailable.isZero() ? undefined : `/vaults/open/${row.ilk}`,
-              // onClick: () => trackingEvents.openVault(Pages.LandingPage, row.ilk),
-            })}
+            primaryKey={"address"}
+            columns={vaultsColumns}
+            noResults={<Box>{t('no-results')}</Box>}
+            deriveRowProps={(row) => {
+              return {
+                href: `/${row.id}`,
+                // onClick: () => {
+                //   trackingEvents.overviewManage(row.id.toString(), row.ilk)
+                // },
+              }
+            }}
           />
         </DisplayTable>
-      </Grid>
+      </Box>
       <CardContainer>
         <CreateCard>
           <CommonPTag fSize={20} weight={700}>
@@ -327,6 +359,7 @@ const CreateCard = styled.div`
 
 const DisplayTable = styled.div`
   overflow-x: auto;
+  //min-height: 100%;
 `
 
 const ChartContainer = styled.div`
@@ -345,4 +378,8 @@ const LegendFill = styled.div<{ bg: string }>`
   height: ${rem(14)};
   background-color: ${(props) => props.bg};
   border-radius: 50%;
+`
+
+const HeaderLeft = styled.div`
+  
 `

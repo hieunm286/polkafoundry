@@ -1,19 +1,52 @@
 import React, { useMemo, useState } from "react"
 import styled from "styled-components"
-import { rem } from "../helpers/common-function"
+import {
+  formatCryptoBalance,
+  formatFiatBalance,
+  formatInputNumber,
+  formatPercent,
+  rem,
+} from "../helpers/common-function"
 import { CommonPTag, CommonSpanTag, DEFAULT_DEVICE, defaultBg, Space } from "../constants/styles"
 import { fire, lightGreen, orange, silver, vanilla } from "../constants/color"
 import { FiltersWithPopular } from "../features/vaults-list/FiltersWithPopular"
 import { LoanDetail, LoanHistory, TagFilter } from "../helpers/model"
 import { loadDetailTest } from "../constants/variables"
-import { Box, Grid, Text } from "theme-ui"
+import { Box, Grid, Spinner, Text } from "theme-ui"
 import { ColumnDef, Table } from "./Table"
 import moment from "moment"
 import Link from "next/link"
 import { Trans, useTranslation } from "next-i18next"
+import {BigNumber} from "bignumber.js";
 
 interface TemplateProp {
   title: string
+  tagFilter: TagFilter
+  onTagChain: (tagFilter: TagFilter) => void
+  options: { value: TagFilter; label: string }[]
+  loanInfo?: {
+    [X: string]: any
+  }
+}
+
+const getAvailableToWithdraw = (
+  deposit: string,
+  borrow: string,
+  maxDebtPerUnitCollateral: string,
+) => {
+  const intDeposit = parseFloat(deposit)
+  const intBorrow = parseFloat(borrow)
+  const intMaxDebt = parseFloat(maxDebtPerUnitCollateral)
+
+  const rs = intDeposit - intBorrow / intMaxDebt
+
+  console.log(rs)
+
+  if (rs <= 0) {
+    // return formatInputNumber("0")
+  }
+
+  return formatInputNumber(rs)
 }
 
 const loanHistoryColumn: ColumnDef<LoanHistory, any>[] = [
@@ -63,62 +96,98 @@ const loanHistoryColumn: ColumnDef<LoanHistory, any>[] = [
   },
 ]
 
-const TemplateCreate: React.FC<TemplateProp> = ({ title }) => {
+const caculateCollRatio = (currentPrice: string, borrow: string, deposit: string) => {
+  if (!borrow || borrow === "" || !deposit || deposit === "") return "0%"
+  const intCurrentPrice = parseFloat(currentPrice) ?? 0;
+  const intBorrow = parseFloat(borrow) ?? 0;
+  const intDeposit = parseFloat(deposit) ?? 0;
+
+  if (intCurrentPrice === 0 || intBorrow === 0) return '0%'
+
+  console.log(intCurrentPrice)
+  console.log(intBorrow)
+
+  const big = new BigNumber(intDeposit * intCurrentPrice / intBorrow)
+  return formatPercent(big.times(100))
+}
+
+const TemplateCreate: React.FC<TemplateProp> = ({
+  title,
+  loanInfo,
+  tagFilter,
+  options,
+  onTagChain,
+}) => {
   const { t } = useTranslation()
-  const [tagFilter, setTagFilter] = useState<TagFilter>("loanDetail")
 
-  console.log("render")
-
-  const onTagChain = (tagFilter: TagFilter) => {
-    setTagFilter(tagFilter)
-  }
-
-  const options: { value: TagFilter; label: string }[] = [
-    {
-      value: "loanDetail",
-      label: t("filters.loanDetail"),
-    },
-    {
-      value: "loanHistory",
-      label: t("filters.loanHistory"),
-    },
-  ]
+  const {
+    liquidationPrice,
+    collateralizationRatio,
+    lockedCollateral,
+    token,
+    borrow,
+    deposit,
+    stabilityFee,
+    liquidationRatio,
+    liquidationPenalty,
+    maxDebtPerUnitCollateral,
+    currentPrice,
+    nextPriceUpdate,
+    nextPrice,
+    detailData
+  } = loanInfo ?? {}
 
   const loanDetail = useMemo(
     (): LoanDetail[] => [
       {
         label: t("loanDetail.outstandingDebt"),
-        value: 51,
+        value: detailData ? formatFiatBalance(detailData.debt) : borrow ?? 0,
         token: "pUSD",
       },
       {
         label: t("loanDetail.availableToBorrow"),
-        value: 51,
+        value: detailData ? formatFiatBalance(detailData.availableDebt) :
+          deposit && maxDebtPerUnitCollateral
+            ? formatInputNumber(
+                parseFloat(deposit) *
+                  parseFloat(formatInputNumber(maxDebtPerUnitCollateral.toString())),
+                2,
+              )
+            : 0,
         token: "pUSD",
       },
       {
         label: t("loanDetail.availableToWithDraw"),
-        value: 51,
-        token: "pUSD",
+        value:  detailData ? formatFiatBalance(detailData.freeCollateral) :
+          deposit && borrow && maxDebtPerUnitCollateral
+            ? getAvailableToWithdraw(
+                deposit,
+                borrow,
+                formatInputNumber(maxDebtPerUnitCollateral.toString()),
+              )
+            : 0,
+        token: token,
       },
       {
         label: t("loanDetail.liquidationRatio"),
-        value: 51,
-        token: "pUSD",
+        value: liquidationRatio ? formatPercent(liquidationRatio.times(100)) : "0%",
+        token: "",
       },
       {
         label: t("loanDetail.stabilityFee"),
-        value: 51,
-        token: "pUSD",
+        value: stabilityFee ? formatPercent(stabilityFee.times(100)) : "0%",
+        token: "",
       },
       {
-        label: t("loanDetail.liquidationFee"),
-        value: 51,
-        token: "pUSD",
+        label: t("loanDetail.liquidationPenalty"),
+        value: liquidationPenalty ? formatPercent(liquidationPenalty.times(100)) : "0%",
+        token: "",
       },
     ],
-    [],
+    [loanInfo],
   )
+
+  console.log(loanInfo)
 
   return (
     <Container>
@@ -130,19 +199,19 @@ const TemplateCreate: React.FC<TemplateProp> = ({ title }) => {
               {t("liquidationPrice")}
             </CommonPTag>
             <CommonPTag fSize={48} fColor={fire} weight={700}>
-              $1,500.05
+              ${detailData ? formatFiatBalance(detailData.liquidationPrice) : liquidationPrice ? formatFiatBalance(liquidationPrice) : 0}
             </CommonPTag>
             <CommonPTag fSize={16} fColor={silver} weight={500} m={"40px 0 0"}>
               {t("currentETHPrice")}
             </CommonPTag>
             <CommonPTag fSize={20} fColor={"white"} weight={500}>
-              $2,300.05
+              ${currentPrice ? formatFiatBalance(currentPrice) : 0}
             </CommonPTag>
             <CommonPTag fSize={16} fColor={silver} weight={400} m={"7px 0 0"}>
-              {t("nextPriceIn")}
+              {t("nextPriceIn")} {moment(nextPriceUpdate).format('MMM DD, YYYY, h:mma')}
             </CommonPTag>
             <CommonPTag fSize={14} fColor={silver} weight={400}>
-              $2,100.05
+              ${nextPrice ? formatFiatBalance(nextPrice) : 0}
             </CommonPTag>
             <Link href={""}>
               <CommonPTag fSize={14} fColor={orange} weight={500} m={"10px 0 0 0"}>
@@ -152,19 +221,21 @@ const TemplateCreate: React.FC<TemplateProp> = ({ title }) => {
           </div>
           <div>
             <CommonPTag fSize={16} fColor={vanilla} weight={500}>
-              {t("liquidationPrice")}
+              {t("collaterizationRatio")}
             </CommonPTag>
             <CommonPTag fSize={48} fColor={lightGreen} weight={700}>
-              350.08%
+              {detailData ? formatPercent(detailData.collateralizationRatio.times(100)) : collateralizationRatio ? (
+                formatPercent(collateralizationRatio.times(100))
+              ) : currentPrice ? caculateCollRatio(formatInputNumber(currentPrice.toString()), borrow, deposit) : 0}
             </CommonPTag>
             <CommonPTag fSize={16} fColor={silver} weight={500} m={"40px 0 0"}>
               {t("collateralLocked")}
             </CommonPTag>
             <CommonPTag fSize={20} fColor={"white"} weight={500}>
-              0.9005 ETH
+              {detailData ? formatCryptoBalance(detailData.lockedCollateral) : lockedCollateral && formatCryptoBalance(lockedCollateral)} {token}
             </CommonPTag>
             <CommonPTag fSize={14} fColor={silver} weight={400} m={"10px 0 0 0"}>
-              ~ $2,100.08
+              $ {detailData ? formatFiatBalance(detailData.lockedCollateralUSD) : ''}
             </CommonPTag>
           </div>
         </Grid>

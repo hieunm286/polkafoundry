@@ -3,7 +3,7 @@ import styled from "styled-components"
 import { serverSideTranslations } from "next-i18next/serverSideTranslations"
 import { defaultBg } from "../constants/styles"
 import AppHeader from "./Header"
-import {GetFromLocalStorage, rem, utf8ToBytes32} from "../helpers/common-function"
+import {amountFromRad, amountFromRay, GetFromLocalStorage, rem, utf8ToBytes32} from "../helpers/common-function"
 import { useRecoilState, useSetRecoilState } from "recoil"
 import {
   connectionAccountState,
@@ -12,10 +12,26 @@ import {
   proxyAccountAddress,
 } from "../recoil/atoms"
 import {changeChain, getProxyAddress, initialContract} from "../helpers/web3"
-import { GET_CDPS, CDP_MANAGER, MCD_CAT, PIP_ETH } from "../blockchain/addresses/kovan.json"
+import { GET_CDPS, CDP_MANAGER, MCD_CAT, PIP_ETH, MCD_VAT, MCD_SPOT, MCD_JUG } from "../blockchain/addresses/moonbeam.json"
 import getCdpsAbi from "../blockchain/abi/get-cdps.json"
+import cdpManagerAbi from "../blockchain/abi/dss-cdp-manager.json"
+import mcdJugAbi from "../blockchain/abi/mcd-jug.json"
+import vatAbi from "../blockchain/abi/vat.json"
+import spotAbi from "../blockchain/abi/mcd-spot.json"
 import mcdCatAbi from "../blockchain/abi/mcd-cat.json"
 import osmAbi from "../blockchain/abi/mcd-osm.json"
+
+import Web3 from "web3";
+import {amountFromWei} from "@oasisdex/utils";
+import {BigNumber} from "bignumber.js";
+import {vatIlks$} from "../helpers/ilks/vat";
+import {spotIlks$} from "../helpers/ilks/spot";
+import {jugIlks$} from "../helpers/ilks/jug";
+import {catIlks$} from "../helpers/ilks/cat";
+import {createIlkData$} from "../helpers/ilks";
+import {mcdData} from "../constants/variables";
+import {createOraclePriceData$} from "../helpers/pip/oracle";
+import {pipPeek$} from "../helpers/pip/pip";
 
 interface LayoutProps {
   children: JSX.Element
@@ -53,13 +69,6 @@ const Layout: React.FC<LayoutProps> = ({ noLayout = false, children }) => {
             setAddress(accounts[0])
             const proxy = await getProxyAddress(accounts[0])
             setProxyAddress(proxy)
-
-            const contract = initialContract(getCdpsAbi, GET_CDPS)
-            const cdp = await contract.methods.getCdpsAsc(CDP_MANAGER, proxy).call()
-            console.log(cdp)
-            const mcdCont = initialContract(mcdCatAbi, MCD_CAT)
-            const osm = initialContract(osmAbi, PIP_ETH)
-
           }
 
           window.ethereum.on("accountsChanged", async (accounts) => {
@@ -74,7 +83,7 @@ const Layout: React.FC<LayoutProps> = ({ noLayout = false, children }) => {
           })
         }
       } catch (err) {
-        console.log(err.message)
+        console.log(err)
       }
     }
 

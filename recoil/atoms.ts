@@ -23,7 +23,7 @@ export const inputValueCreateLoanBorrow = atom<string>({
 export const CREATE_LOAN_STAGE = {
   editForm: 'Edit form',
   createProxy: 'Create proxy',
-
+  confirmation: 'Confirmation'
 }
 
 export const createLoanStage = atom<string>({
@@ -41,4 +41,9 @@ export const MANAGE_LOAN_STAGE = {
 export const manageLoanStage = atom<string>({
   key: "manageLoanStage",
   default:CREATE_LOAN_STAGE.editForm
+})
+
+export const walletFullInformation = atom<any>({
+  key: "walletFullInformation",
+  default: undefined
 })

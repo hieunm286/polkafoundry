@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from "react"
-import { rem } from "../../helpers/common-function"
+import React, {useEffect, useMemo, useState} from "react"
+import {ilkToToken, rem} from "../../helpers/common-function"
 import styled from "styled-components"
 import TemplateCreate from "../../components/TemplateCreate"
 import { MANAGE_LOAN_STAGE, manageLoanStage } from "../../recoil/atoms"
@@ -9,11 +9,52 @@ import { useTranslation } from "next-i18next"
 import { useRecoilState } from "recoil"
 import PUSDFilter from "./PUSDFilter"
 import Collateral from "./Collateral"
+import {fetchLoanById} from "../loan-overview/LoanOverviewHandle";
+import {createOraclePriceData$} from "../../helpers/pip/oracle";
+import {createIlkData$} from "../../helpers/ilks";
+
+const getCollateral = () => {
+
+}
 
 const LoanDetailOverView = ({ loan }: { loan: string }) => {
   const { t } = useTranslation()
   const [tagFilter, setTagFilter] = useState<TagFilter>("pUSD")
   const [manageStage, setManageState] = useRecoilState(manageLoanStage)
+  const [loanInfo, setLoanInfo] = useState<any>()
+  const [detailTagFilter, setDetailTagFilter] = useState<TagFilter>("loanDetail")
+
+  const onDetailTagChain = (tagFilter: TagFilter) => {
+    setDetailTagFilter(tagFilter)
+  }
+
+  const detailOptions: { value: TagFilter; label: string }[] = [
+    {
+      value: "loanDetail",
+      label: t("filters.loanDetail"),
+    },
+    {
+      value: "loanHistory",
+      label: t("filters.loanHistory"),
+    },
+  ]
+
+  useEffect(() => {
+    const data = async () => {
+      const detail = await fetchLoanById(loan)
+      const token = ilkToToken(detail.ilk)
+      const oracleData = await createOraclePriceData$(token)
+      const ilkData = await createIlkData$(detail.ilk)
+      const rs = {
+        ...oracleData,
+        ...ilkData,
+        detailData: detail
+      }
+      setLoanInfo(rs)
+    }
+
+    void data()
+  }, [loan])
 
   const options = useMemo(
     (): { value: TagFilter; label: string }[] => [
@@ -40,7 +81,7 @@ const LoanDetailOverView = ({ loan }: { loan: string }) => {
 
   return (
     <CreateContainer>
-      <TemplateCreate title={"ETH-1 Loan # " + loan} />
+      <TemplateCreate title={"ETH-A Loan # " + loan} loanInfo={loanInfo} tagFilter={detailTagFilter} options={detailOptions} onTagChain={onDetailTagChain} />
       <CreateCard>
         {(manageStage === MANAGE_LOAN_STAGE.editForm ||
           manageStage === MANAGE_LOAN_STAGE.editFormCollateral) && (

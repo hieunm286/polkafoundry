@@ -1,10 +1,11 @@
 import { BigNumber } from "bignumber.js"
 import { isNumber } from "lodash"
-import { billion, million, oneThousandth, ten, thousand, zero } from "../constants/zero"
-import {getToken} from "../blockchain/tokensMetadata";
-import Decimal from "decimal.js";
-import React from "react";
-import Web3 from "web3";
+import {billion, million, one, oneThousandth, ten, thousand, zero} from "../constants/zero"
+import { getToken } from "../blockchain/tokensMetadata"
+import Decimal from "decimal.js"
+import React from "react"
+import Web3 from "web3"
+import { RAD, RAY, WAD } from "../constants/variables"
 
 BigNumber.config({
   FORMAT: {
@@ -166,9 +167,9 @@ export function formatBigNumber(amount: BigNumber, digits: number) {
 }
 
 export function calculateTokenPrecisionByValue({
-                                                 token,
-                                                 usdPrice,
-                                               }: {
+  token,
+  usdPrice,
+}: {
   token: string
   usdPrice: BigNumber
 }) {
@@ -184,12 +185,60 @@ export function calculateTokenPrecisionByValue({
 
 export function handleNumericInput(fn: (n?: BigNumber) => void) {
   return (e: string) => {
-    const value = e.replace(/,/g, '')
-    const amount = value !== '' ? new BigNumber(value) : undefined
+    const value = e.replace(/,/g, "")
+    const amount = value !== "" ? new BigNumber(value) : undefined
     fn(amount)
   }
 }
 
 export function utf8ToBytes32(str: string): string {
-  return Web3.utils.utf8ToHex(str).padEnd(66, '0')
+  return Web3.utils.utf8ToHex(str).padEnd(66, "0")
+}
+
+export function ilkUrnAddressToString({
+  ilk,
+  urnAddress,
+}: {
+  ilk: string
+  urnAddress: string
+}): string {
+  return `${ilk}-${urnAddress}`
+}
+
+export function amountFromRay(amount: BigNumber): BigNumber {
+  return amount.div(RAY)
+}
+
+export function amountFromRad(amount: BigNumber): BigNumber {
+  return amount.div(RAD)
+}
+
+export function funcSigTopic(v: string): string {
+  //@ts-ignore
+  return padEnd(ethAbi.encodeFunctionSignature(v), 66, "0")
+}
+
+export function amountToWei(amount: BigNumber, token: string): BigNumber {
+  const precision = getToken(token).precision
+  return amount.times(new BigNumber(10).pow(precision))
+}
+
+export function amountToWad(amount: BigNumber): BigNumber {
+  return amount.times(WAD)
+}
+
+export function ilkToToken(ilk: string) {
+  return ilk.split('-')[0]
+}
+
+export function formatFiatBalance(amount?: BigNumber): string {
+  if (!amount) return "";
+  const absAmount = amount.absoluteValue()
+
+  if (absAmount.eq(zero)) return formatAsShorthandNumbers(amount, 2)
+  if (absAmount.lt(one)) return formatAsShorthandNumbers(amount, 4)
+  if (absAmount.lt(million)) return amount.toFormat(2, BigNumber.ROUND_DOWN)
+  // We don't want to have numbers like 999999 formatted as 999.99k
+
+  return formatAsShorthandNumbers(amount, 2)
 }

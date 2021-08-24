@@ -1,30 +1,43 @@
 import Web3 from "web3"
-import { ETH, PROXY_REGISTRY } from "../blockchain/addresses/kovan.json"
+import { ETH, PROXY_REGISTRY } from "../blockchain/addresses/moonbeam.json"
 import dsProxyRegistryAbi from "../blockchain/abi/ds-proxy-registry.json"
 import erc20Abi from "../blockchain/abi/erc20.json"
 import {zero} from "../constants/zero";
 
 export const changeChain = async () => {
   // console.log(fromToken);
+  // const params = [
+  //   {
+  //     chainId: "0xB",
+  //     chainName: "PolkaFoundry",
+  //     nativeCurrency: {
+  //       name: "HLB",
+  //       symbol: "HLB",
+  //       decimals: 18,
+  //     },
+  //     rpcUrls: ["https://rpc-halongbay.polkafoundry.com"],
+  //     // blockExplorerUrls:
+  //   },
+  // ]
+
   const params = [
     {
-      chainId: "0xB",
-      chainName: "PolkaFoundry",
+      chainId: "0x507",
+      chainName: "Moonbase Alpha",
       nativeCurrency: {
-        name: "HLB",
-        symbol: "HLB",
+        name: "DEV",
+        symbol: "DEV",
         decimals: 18,
       },
-      rpcUrls: ["https://rpc-halongbay.polkafoundry.com"],
-      // blockExplorerUrls:
-      // MULTICHAIN_SUPPORT_ID[fromToken.id]?.blockExplorerUrls,
+      rpcUrls: ["https://rpc.testnet.moonbeam.network"],
+      blockExplorerUrls: ["https://moonbase-blockscout.testnet.moonbeam.network/"]
     },
   ]
 
   try {
     return await window.ethereum.request({
       method: "wallet_switchEthereumChain",
-      params: [{ chainId: "0xB" }],
+      params: [{ chainId: "0x507" }],
       // params: [{ chainId: '0x2a' }],
     })
   } catch (switchError) {

@@ -62,3 +62,7 @@ export interface LoanHistory {
   time: any;
   txtHash: string
 }
+
+export interface Ilks {
+  ilks: string
+}
