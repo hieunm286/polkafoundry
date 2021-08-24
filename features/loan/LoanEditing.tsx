@@ -40,7 +40,7 @@ import {
   MCD_JUG,
   CDP_MANAGER,
   MCD_JOIN_ETH_A,
-} from "../../blockchain/addresses/moonbeam.json"
+} from "../../blockchain/addresses/kovan.json"
 import { BigNumber } from "bignumber.js"
 import { one, zero } from "../../constants/zero"
 import { MaxUint } from "../../constants/variables"
@@ -88,7 +88,7 @@ const LoanEditing = ({
         // For kovan
         const balance = await getETHBalance(address)
         setBalance(balance)
-        setToken("DEV")
+        setToken("ETH")
 
         // For polkadot
         // const { balance, token } = await getTotalBalanceByTokenAddress(address, ETH)
