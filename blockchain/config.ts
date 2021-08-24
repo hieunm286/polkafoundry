@@ -28,7 +28,7 @@ import {
 } from "./addresses/addressesUtils"
 import { default as kovanAddresses } from "./addresses/kovan.json"
 import { default as mainnetAddresses } from "./addresses/mainnet.json"
-import { default as polkadotAddress } from "./addresses/polkadot.json"
+import { default as polkadotAddress } from "./addresses/moonbeam.json"
 
 export function contractDesc(abi: any, address: string): ContractDesc {
   return { abi, address }

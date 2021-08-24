@@ -12,7 +12,7 @@ import {
   proxyAccountAddress,
 } from "../recoil/atoms"
 import {changeChain, getProxyAddress, initialContract} from "../helpers/web3"
-import { GET_CDPS, CDP_MANAGER, MCD_CAT, PIP_ETH } from "../blockchain/addresses/kovan.json"
+import { GET_CDPS, CDP_MANAGER, MCD_CAT, PIP_ETH } from "../blockchain/addresses/polkadot.json"
 import getCdpsAbi from "../blockchain/abi/get-cdps.json"
 import mcdCatAbi from "../blockchain/abi/mcd-cat.json"
 import osmAbi from "../blockchain/abi/mcd-osm.json"

@@ -32,7 +32,7 @@ import Web3 from "web3";
 import dsProxyAbi from "../../blockchain/abi/ds-proxy.json";
 import dsProxyActionsAbi from "../../blockchain/abi/dss-proxy-actions.json";
 import erc20 from "../../blockchain/abi/erc20.json";
-import { PROXY_ACTIONS, ETH, MCD_JOIN_DAI, MCD_JUG, CDP_MANAGER, MCD_JOIN_ETH_A } from "../../blockchain/addresses/kovan.json";
+import { PROXY_ACTIONS, ETH, MCD_JOIN_DAI, MCD_JUG, CDP_MANAGER, MCD_JOIN_ETH_A } from "../../blockchain/addresses/polkadot.json";
 import {BigNumber} from "bignumber.js";
 import {one, zero} from "../../constants/zero";
 import {MaxUint} from "../../constants/variables";
@@ -123,7 +123,6 @@ const LoanEditing = ({ ilk }: { ilk: string }) => {
     }
 
     const encodeData = getOpenCallData(amount, context).encodeABI()
-    console.log(encodeData)
     await contract.methods.execute(PROXY_ACTIONS, encodeData).send({
         from: address,
         value: Web3.utils.toWei(`${depositValue}`, "ether"),

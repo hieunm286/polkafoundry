@@ -1,5 +1,5 @@
 import Web3 from "web3"
-import { ETH, PROXY_REGISTRY } from "../blockchain/addresses/kovan.json"
+import { ETH, PROXY_REGISTRY } from "../blockchain/addresses/polkadot.json"
 import dsProxyRegistryAbi from "../blockchain/abi/ds-proxy-registry.json"
 import erc20Abi from "../blockchain/abi/erc20.json"
 import {zero} from "../constants/zero";
