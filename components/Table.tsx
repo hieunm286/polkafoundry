@@ -33,7 +33,7 @@ export function TableContainer({
         p: 0,
         borderCollapse: "separate",
         borderSpacing: "0 9px",
-        height: '100%',
+        height: "100%",
         ...sx,
       }}
       as="table"

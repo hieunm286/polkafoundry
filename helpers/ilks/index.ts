@@ -74,6 +74,6 @@ export function filterByTag(ilks: IlkWithBalance[], tag: TagFilter | undefined) 
   return ilks.filter((ilk) => {
     const tokenMeta = getToken(ilk.token)
 
-    return (tokenMeta.tags as CoinTag[]).includes(tag)
+    return (tokenMeta.tags as TagFilter[]).includes(tag)
   })
 }

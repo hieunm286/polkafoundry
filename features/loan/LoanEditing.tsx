@@ -214,8 +214,8 @@ const LoanEditing = ({
             console.log(receipt)
             setLoading(true)
           },
-          // eslint-disable-next-line handle-callback-err
         )
+        // eslint-disable-next-line handle-callback-err
         .on("error", function (error, receipt) {
           console.log(receipt)
           setLoading(false)

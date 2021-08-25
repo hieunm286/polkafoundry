@@ -14,20 +14,25 @@ const AppHeader = () => {
   return (
     <HeaderContainer>
       <HeaderLeft>
-        {/*<Link href={`/`}>*/}
-        {/*  <Logo src={`/images/icon/polka-icon.svg`} alt={``} />*/}
-        {/*</Link>*/}
+        <Link href={`/`}>
+          <a>
+            <Logo src={`/images/icon/polka-icon.svg`} alt={``} />
+          </a>
+        </Link>
         <Link href={"/"}>
           <a>
-          <Image src={`/images/icon/polka-label.svg`} alt={``} width={65} height={15} />
+            <Image src={`/images/icon/polka-label.svg`} alt={``} width={65} height={15} />
           </a>
         </Link>
         <HeaderMenu>
-          {
-            address && <Link href={`/owner/${address}`}><MenuLink>{t("yourVaults")}</MenuLink></Link>
-
-          }
-          <Link href={`/loans/list`}><MenuLink>{t("openNewVaults")}</MenuLink></Link>
+          {address && (
+            <Link href={`/owner/${address}`}>
+              <MenuLink>{t("yourVaults")}</MenuLink>
+            </Link>
+          )}
+          <Link href={`/loans/list`}>
+            <MenuLink>{t("openNewVaults")}</MenuLink>
+          </Link>
         </HeaderMenu>
       </HeaderLeft>
 

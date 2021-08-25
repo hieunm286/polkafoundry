@@ -3,7 +3,7 @@ import { Grid } from "theme-ui"
 import { CommonPTag, CommonSpanTag } from "../constants/styles"
 import styled from "styled-components"
 import { gray, orange, vanilla } from "../constants/color"
-import {formatInputNumber, rem} from "../helpers/common-function"
+import { formatInputNumber, rem } from "../helpers/common-function"
 
 interface CustomLoanInputProp {
   value: string

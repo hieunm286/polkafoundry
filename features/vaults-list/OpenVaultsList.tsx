@@ -5,8 +5,8 @@ import TemplateListing from "../../components/TemplateListing"
 import { Box, Button, Text } from "theme-ui"
 import { Trans, useTranslation } from "next-i18next"
 import Link from "next/link"
-import {useRecoilValue} from "recoil";
-import {appContext} from "../../recoil/atoms";
+import { useRecoilValue } from "recoil"
+import { appContext } from "../../recoil/atoms"
 
 const ilksColumns: any = [
   {

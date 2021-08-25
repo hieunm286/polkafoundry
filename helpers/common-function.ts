@@ -21,14 +21,14 @@ BigNumber.config({
 })
 
 const DEFAULT_RATIO = 16
-export const rem = (pxValue: number | TemplateStringsArray) => {
+export const rem = (pxValue: number | TemplateStringsArray | string) => {
   if (Array.isArray(pxValue)) {
     pxValue = pxValue[0]
   }
 
-  pxValue = parseInt(pxValue + "")
+  pxValue = parseInt(pxValue as string + "")
 
-  return pxValue / DEFAULT_RATIO + "rem"
+  return `${pxValue / DEFAULT_RATIO}rem`
 }
 
 export const trimAddress = (address: string): string => {

@@ -1,6 +1,7 @@
 import { initialContract } from "../web3"
 import getCdpsAbi from "../../blockchain/abi/get-cdps.json"
 import { CDP_MANAGER, GET_CDPS } from "../../blockchain/addresses/kovan.json"
+import _ from "lodash";
 
 interface CDP {
   id: string
