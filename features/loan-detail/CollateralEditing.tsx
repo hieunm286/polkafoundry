@@ -40,7 +40,7 @@ import {
   MCD_JUG,
   PROXY_ACTIONS,
   MCD_DAI,
-} from "../../blockchain/addresses/kovan.json"
+} from "../../blockchain/addresses/moonbeam.json"
 import dsProxyActionsAbi from "../../blockchain/abi/dss-proxy-actions.json"
 import { BigNumber } from "bignumber.js"
 import { MaxUint } from "../../constants/variables"
@@ -93,7 +93,7 @@ const CollateralEditing: React.FC<LoanDetailEditProps> = ({ onClickNext, loanInf
         // For kovan
         const balance = await getETHBalance(address)
         setBalance(balance)
-        setToken("ETH")
+        setToken("DEV")
       } catch (err) {
         console.log(err.message)
       }

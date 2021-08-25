@@ -11,7 +11,7 @@ import {
   proxyAccountAddress,
 } from "../../recoil/atoms"
 import { ethers } from "ethers"
-import { PROXY_REGISTRY } from "../../blockchain/addresses/kovan.json"
+import { PROXY_REGISTRY } from "../../blockchain/addresses/moonbeam.json"
 import dsProxyRegistryAbi from "../../blockchain/abi/ds-proxy-registry.json"
 import Web3 from "web3"
 import { getProxyAddress } from "../../helpers/web3"

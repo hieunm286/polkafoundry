@@ -17,6 +17,8 @@ export const createIlkData$ = async (ilk: string) => {
     ilks: ilk,
   }
 
+  console.log(ilk)
+
   const res = Promise.all([
     await vatIlks$(ilks),
     await spotIlks$(ilks),

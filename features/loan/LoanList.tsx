@@ -98,11 +98,18 @@ const LoanList = () => {
   const [ilks, setIlks] = useState<any>([])
   const AppContext = useRecoilValue(appContext)
 
+  console.log(AppContext)
+
   useEffect(() => {
     const fetchListToken = async () => {
-      if (!AppContext) return;
-      const ilksData = await Promise.all(Object.keys(AppContext.token).filter(ilk => ilk === "ETH-A").map(ilk => createIlkData$(ilk)))
-      setIlks(ilksData)
+      try {
+        if (!AppContext) return;
+        const ilksData = await Promise.all(Object.keys(AppContext.token).filter(ilk => ilk === "ETH-A").map(ilk => createIlkData$(ilk)))
+        setIlks(ilksData)
+      } catch (err) {
+
+      }
+
     }
 
     void fetchListToken()

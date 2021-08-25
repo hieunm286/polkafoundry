@@ -145,8 +145,10 @@ const LoanOverview = ({ address }: { address: string }) => {
     setSpinning(true)
     void fetchAllLoansByAddress(address).then(res => {
       setLoanData(res)
+      console.log('res', res)
       setSpinning(false)
     }).catch(err => {
+      console.log(err)
       setSpinning(false)
     })
   }, [])

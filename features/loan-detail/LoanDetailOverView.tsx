@@ -57,6 +57,9 @@ const LoanDetailOverView = ({ loan }: { loan: string }) => {
         setPageLoading(false)
       } catch (err) {
 
+      } finally {
+        setPageLoading(false)
+
       }
 
     }

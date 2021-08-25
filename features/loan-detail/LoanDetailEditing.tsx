@@ -45,7 +45,7 @@ import {
   MCD_JOIN_ETH_A,
   MCD_JUG,
   PROXY_ACTIONS,
-} from "../../blockchain/addresses/kovan.json"
+} from "../../blockchain/addresses/moonbeam.json"
 import dsProxyActionsAbi from "../../blockchain/abi/dss-proxy-actions.json"
 import { BigNumber } from "bignumber.js"
 import ConfirmationLoanChange from "./ConfirmationLoanChange"
@@ -90,7 +90,7 @@ const LoanDetailEditing: React.FC<LoanDetailEditProps> = ({ onClickNext, loanInf
         // For kovan
         const balance = await getETHBalance(address)
         setBalance(balance)
-        setToken("ETH")
+        setToken("DEV")
         setAdvanceToken({
           token: "pUSD",
           balance: formatFiatBalance(loanInfo?.detailData?.availableDebt),

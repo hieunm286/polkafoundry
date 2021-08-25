@@ -1,6 +1,6 @@
 import { initialContract } from "../web3"
 import mcdOsmAbi from "../../blockchain/abi/mcd-osm.json"
-import { MCD_SPOT } from "../../blockchain/addresses/kovan.json"
+import { MCD_SPOT } from "../../blockchain/addresses/moonbeam.json"
 import { mcdData } from "../../constants/variables"
 import { BigNumber } from "bignumber.js"
 import Web3 from "web3"

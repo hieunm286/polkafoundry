@@ -13,17 +13,20 @@ import { BigNumber } from "bignumber.js"
 import { HOUR, SECONDS_PER_YEAR } from "../../constants/variables"
 import { getProxyAddress, initialContract } from "../../helpers/web3"
 import getCdpsAbi from "../../blockchain/abi/get-cdps.json"
-import { CDP_MANAGER, GET_CDPS } from "../../blockchain/addresses/kovan.json"
+import { CDP_MANAGER, GET_CDPS } from "../../blockchain/addresses/moonbeam.json"
 import { ethers } from "ethers"
 
 export const fetchAllLoansByAddress = async (address: string) => {
   const proxy = await getProxyAddress(address)
+  console.log(proxy)
   if (proxy === ethers.constants.AddressZero) {
     return []
   }
 
   const contract = initialContract(getCdpsAbi, GET_CDPS)
   const cdp = await contract.methods.getCdpsAsc(CDP_MANAGER, proxy).call()
+
+  console.log(cdp)
 
   const { ids } = cdp
   const _ids = ids.map(
