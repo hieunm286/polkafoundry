@@ -85,5 +85,11 @@
   "setUpLoad": "Set up Loan",
   "setUpLoanLead": "Input amount of collateral to deposit and tokens to borrow.",
   "createProxy": "Create proxy",
-  "borrowMore": "Borrow more  or pay back tokens"
+  "borrowMore": "Borrow more  or pay back tokens",
+  "confirmLoanCreation": "Confirm Loan Creation",
+  "finalReview": "Final review of loan details.",
+  "inWallet": "In wallet",
+  "depositToLoan": "Deposit to Loan",
+  "remainingInWallet": "Remaining in Wallet",
+  "pUSDBeingBorrowed": "pUSD being borrowed"
 }

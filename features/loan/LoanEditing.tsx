@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react"
+import React, { useCallback, useEffect, useMemo, useState } from "react"
 import { Grid, Spinner } from "theme-ui"
 import CustomLoanInput from "../../components/CustomLoanInput"
 import styled from "styled-components"
@@ -8,8 +8,11 @@ import {
   calculateTokenPrecisionByValue,
   formatBigNumber,
   formatCryptoBalance,
-  formatInputNumber, notifySuccess,
+  formatFiatBalance,
+  formatInputNumber,
+  notifySuccess,
   rem,
+  sub,
 } from "../../helpers/common-function"
 import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil"
 import {
@@ -19,6 +22,7 @@ import {
   inputValueCreateLoanBorrow,
   inputValueCreateLoanDeposite,
   proxyAccountAddress,
+  triggerUpdate,
 } from "../../recoil/atoms"
 import { ethers } from "ethers"
 import {
@@ -45,6 +49,9 @@ import { BigNumber } from "bignumber.js"
 import { one, zero } from "../../constants/zero"
 import { MaxUint } from "../../constants/variables"
 import Link from "next/link"
+import LoanInformation from "../../components/LoanInformation"
+import { caculateCollRatio } from "../../components/TemplateCreate"
+import { getLastCdp } from "../../helpers/loan"
 
 const ERRORS_LIST = {
   greaterThanBalance: "You cannot deposit more collateral than the amount in your wallet",
@@ -62,10 +69,16 @@ const LoanEditing = ({
   ilk,
   onChangeAmount,
   maxDebt,
+  review,
+  currentPrice,
+  liquidationPrice,
 }: {
   ilk: string
   onChangeAmount: (amount: string, kind: "borrow" | "deposit") => void
   maxDebt?: BigNumber
+  review: { label: string; value: string }[]
+  currentPrice?: BigNumber
+  liquidationPrice?: BigNumber
 }) => {
   const address = useRecoilValue(connectionAccountState)
   const [depositValue, setDepositValue] = useRecoilState(inputValueCreateLoanDeposite)
@@ -78,6 +91,8 @@ const LoanEditing = ({
   const [step, setStep] = useRecoilState(createLoanStage)
   const [loading, setLoading] = useState(false)
   const [tx, setTx] = useState(undefined)
+  const [trigger, setTrigger] = useRecoilState(triggerUpdate)
+  const [lastLoan, setLastLoan] = useState<string | undefined>(undefined)
 
   useEffect(() => {
     const getWalletBalance = async (): Promise<void> => {
@@ -100,11 +115,27 @@ const LoanEditing = ({
     }
 
     void getWalletBalance()
-  }, [address])
+  }, [address, trigger])
 
   useEffect(() => {
     setTx(undefined)
+    setLastLoan(undefined)
   }, [step])
+
+  useEffect(() => {
+    if (tx) {
+      if (!userProxy) {
+        return
+      }
+      void getLastCdp(userProxy)
+        .then((res) => {
+          setLastLoan(res.id)
+        })
+        .catch((err) => {
+          console.log(err)
+        })
+    }
+  }, [tx, userProxy])
 
   const onClickSetupProxy = () => {
     setCreateStage(CREATE_LOAN_STAGE.createProxy)
@@ -187,13 +218,16 @@ const LoanEditing = ({
         )
         .on("error", function (error, receipt) {
           console.log(receipt)
-          setTx(receipt.transactionHash)
           setLoading(false)
         })
         .on("receipt", function (receipt) {
           console.log(receipt)
           setTx(receipt.transactionHash)
           setLoading(false)
+          setDepositValue("")
+          setBalance("")
+          setErrors([])
+          setTrigger(!trigger)
           notifySuccess("✅ Transaction submitted successfully")
         })
     } catch (err) {
@@ -201,6 +235,45 @@ const LoanEditing = ({
       setLoading(false)
     }
   }
+
+  const finalReview = useMemo(
+    (): typeof review => [
+      {
+        label: "inWallet",
+        value: formatInputNumber(balance) + " " + token,
+      },
+      {
+        label: "depositToLoan",
+        value: formatInputNumber(depositValue) + " " + token,
+      },
+      {
+        label: "remainingInWallet",
+        value: sub(balance, depositValue) + " " + token,
+      },
+      {
+        label: "pUSDBeingBorrowed",
+        value: borrowValue ? formatInputNumber(borrowValue) + " " + "pUSD" : "0 pUSD",
+      },
+      {
+        label: "collaterizationRatio",
+        value: currentPrice
+          ? caculateCollRatio(
+              formatInputNumber(currentPrice.toString()),
+              borrowValue,
+              depositValue,
+            ) +
+            " " +
+            token
+          : "0%",
+      },
+      {
+        label: "liquidationPrice",
+        value: liquidationPrice ? formatFiatBalance(liquidationPrice) + " " + token : "0",
+      },
+      ...review,
+    ],
+    [review, liquidationPrice, currentPrice, depositValue, borrowValue, balance, token],
+  )
 
   return (
     <div>
@@ -264,26 +337,35 @@ const LoanEditing = ({
       )}
       {step === CREATE_LOAN_STAGE.confirmation && (
         <>
+          <LoanInformation loanInfo={finalReview} />
           <DivTextCenter>
-            {tx ? (
+            {lastLoan ? (
               // Uncomment for moonbeam or kovan
-              <a
-                href={`https://moonbase-blockscout.testnet.moonbeam.network/tx/${tx}`}
-                target="_blank"
-                rel={`noreferrer noopener`}
-              >
-                {/*<a href={`https://kovan.etherscan.io/tx/${tx}`} target="_blank" rel={`noreferrer noopener`}>*/}
+              <Link href={`/${lastLoan}`}>
                 <Button>
-                  <CommonSpanTag>View transaction</CommonSpanTag>
+                  <CommonSpanTag>Go to Loan #{lastLoan}</CommonSpanTag>
                 </Button>
-              </a>
+              </Link>
             ) : (
               <Button onClick={handleConfirmOpenLoan} disabled={loading}>
                 {loading && <Spinner sx={{ color: "#500EC1", marginRight: 2 }} size={24} />}
                 <CommonSpanTag>Confirm</CommonSpanTag>
               </Button>
             )}
-            <Back onClick={() => setStep(CREATE_LOAN_STAGE.editForm)}>Back to Loan setup</Back>
+            {tx ? (
+              <a
+                href={`https://moonbase-blockscout.testnet.moonbeam.network/tx/${tx}`}
+                target="_blank"
+                rel={`noreferrer noopener`}
+              >
+                {/*<a href={`https://kovan.etherscan.io/tx/${tx}`} target="_blank" rel={`noreferrer noopener`}>*/}
+                <Back>View transaction</Back>
+              </a>
+            ) : !loading ? (
+              <Back onClick={() => setStep(CREATE_LOAN_STAGE.editForm)}>Back to Loan setup</Back>
+            ) : (
+              <></>
+            )}
           </DivTextCenter>
         </>
       )}

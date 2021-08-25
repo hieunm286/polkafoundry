@@ -269,3 +269,11 @@ export const notifySuccess = (message) => {
     progress: undefined,
   });
 }
+
+export const sub = (a: string, b: string) => {
+  return formatInputNumber(parseFloat(a) - parseFloat(b))
+}
+
+export const sum = (a: string, b: string) => {
+  return formatInputNumber(parseFloat(a) + parseFloat(b))
+}
