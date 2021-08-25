@@ -45,9 +45,9 @@ const LoanDetailOverView = ({ loan }: { loan: string }) => {
       try {
         setPageLoading(true)
         const detail = await fetchLoanById(loan)
-        const token = ilkToToken(detail.ilk)
+        const token = detail ? ilkToToken(detail.ilk) : 'ETH-A'
         const oracleData = await createOraclePriceData$(token)
-        const ilkData = await createIlkData$(detail.ilk)
+        const ilkData = detail ? await createIlkData$(detail.ilk) : await createIlkData$("ETH-A")
         const rs = {
           ...oracleData,
           ...ilkData,
@@ -56,7 +56,7 @@ const LoanDetailOverView = ({ loan }: { loan: string }) => {
         setLoanInfo(rs)
         setPageLoading(false)
       } catch (err) {
-
+        console.log('zzz', err)
       }
 
     }
