@@ -60,10 +60,17 @@ const Collateral: React.FC<CollateralProp> = ({ loanInfo }) => {
       {(manageStage === MANAGE_LOAN_STAGE.editFormCollateral || manageStage === MANAGE_LOAN_STAGE.confirmationCollateral) && (
         <>
           <>
-            <CommonPTag fSize={14} fColor={"white"} weight={400} m={"-15px 0 0"}>
-              {t("borrowMore")}
-            </CommonPTag>
-            <Space top={25} />
+            {
+              !(manageStage === MANAGE_LOAN_STAGE.confirmationCollateral) && (
+                <>
+                  <CommonPTag fSize={14} fColor={"white"} weight={400} m={"-15px 0 0"}>
+                    {t("borrowMore")}
+                  </CommonPTag>
+                  <Space top={25} />
+                </>
+
+              )
+            }
             <CollateralEditing onClickNext={onClickNext} loanInfo={loanInfo} />
           </>
           {

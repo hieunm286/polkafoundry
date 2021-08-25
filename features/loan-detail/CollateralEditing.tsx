@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react"
+import React, {useCallback, useEffect, useMemo, useState} from "react"
 import { Grid, Spinner } from "theme-ui"
 import CustomLoanInput from "../../components/CustomLoanInput"
 import { CommonPTag, CommonSpanTag, DEFAULT_DEVICE, DivTextCenter } from "../../constants/styles"
@@ -16,7 +16,7 @@ import {
   checkLoanOwner,
   formatFiatBalance,
   formatInputNumber,
-  rem,
+  rem, sub, sum,
 } from "../../helpers/common-function"
 import styled from "styled-components"
 import {
@@ -44,6 +44,8 @@ import {
 import dsProxyActionsAbi from "../../blockchain/abi/dss-proxy-actions.json"
 import { BigNumber } from "bignumber.js"
 import { MaxUint } from "../../constants/variables"
+import {caculateCollRatio} from "../../components/TemplateCreate";
+import {caculateLiquidationPrice} from "../loan/CreateNewLoan";
 
 interface LoanDetailEditProps {
   onClickNext: () => void
@@ -429,6 +431,74 @@ const CollateralEditing: React.FC<LoanDetailEditProps> = ({ onClickNext, loanInf
     }
   }
 
+  const reviewDeposit = useMemo(() => ([
+    {
+      label: "inWallet",
+      value: formatInputNumber(balance) + " " + token,
+    },
+    {
+      label: "depositToLoan",
+      value: formatInputNumber(depositValue) + " " + token,
+    },
+    {
+      label: "remainingInWallet",
+      value: sub(balance, depositValue) + " " + token,
+    },
+    {
+      label: "pUSDBeingBorrowed",
+      value: advanceDeposit ? formatInputNumber(advanceDeposit) + " " + "pUSD" : "0 pUSD",
+    },
+    {
+      label: "collaterizationRatio",
+      value: loanInfo
+        ? caculateCollRatio(
+        formatInputNumber(loanInfo.currentPrice.toString()),
+        sum(advanceDeposit || '0', loanInfo.detailData.debt.toString()),
+        formatInputNumber(parseFloat(depositValue) + parseFloat(loanInfo?.detailData?.lockedCollateral.toString())),
+        )
+        : "0%",
+    },
+    {
+      label: "liquidationPrice",
+      value: loanInfo ? caculateLiquidationPrice(sum(depositValue, loanInfo?.detailData?.lockedCollateral.toString()), sum(advanceDeposit || '0', loanInfo.detailData.debt.toString()), formatInputNumber(loanInfo?.maxDebtPerUnitCollateral?.toString()), formatInputNumber(loanInfo.currentPrice.toString())) + " " + token : loanInfo?.detailData.liquidationPrice,
+    },
+  ]), [loanInfo, depositValue, advanceDeposit, balance])
+
+  const reviewWithdraw = useMemo(() => ([
+    {
+      label: "inWallet",
+      value: formatInputNumber(balance) + " " + token,
+    },
+    {
+      label: "movingOutOfLoan",
+      value: formatInputNumber(withdrawValue) + " " + token,
+    },
+    {
+      label: "remainingInWallet",
+      value: sum(balance, withdrawValue) + " " + token,
+    },
+    {
+      label: "pUSDBeingPayback",
+      value: advanceWithdraw ? formatInputNumber(advanceWithdraw) + " " + "pUSD" : "0 pUSD",
+    },
+    {
+      label: "collaterizationRatio",
+      value: loanInfo
+        ? caculateCollRatio(
+          formatInputNumber(loanInfo.currentPrice.toString()),
+          sub(loanInfo.detailData.debt.toString(), advanceWithdraw || '0'),
+          sub(formatInputNumber(loanInfo?.detailData?.lockedCollateral.toString()), withdrawValue),
+        )
+        : "0%",
+    },
+    {
+      label: "liquidationPrice",
+      value: loanInfo ? caculateLiquidationPrice(sub(withdrawValue, loanInfo?.detailData?.lockedCollateral.toString()), sub(loanInfo.detailData.debt.toString(), advanceWithdraw || '0'), formatInputNumber(loanInfo?.maxDebtPerUnitCollateral?.toString()), formatInputNumber(loanInfo.currentPrice.toString())) + " " + token : loanInfo?.detailData.liquidationPrice,
+    },
+  ]), [loanInfo, withdrawValue, advanceWithdraw, balance])
+
+  const review = useMemo(() => type === "deposit" ? reviewDeposit : reviewWithdraw, [type, reviewWithdraw, reviewDeposit])
+
   return (
     <div>
       {manageStage === MANAGE_LOAN_STAGE.confirmationCollateral && (
@@ -437,6 +507,7 @@ const CollateralEditing: React.FC<LoanDetailEditProps> = ({ onClickNext, loanInf
           onConfirm={handleConfirm}
           loading={loading}
           tx={tx}
+          review={review}
         />
       )}
       {manageStage === MANAGE_LOAN_STAGE.editFormCollateral && (

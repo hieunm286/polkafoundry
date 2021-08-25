@@ -96,7 +96,7 @@ const loanHistoryColumn: ColumnDef<LoanHistory, any>[] = [
   },
 ]
 
-const caculateCollRatio = (currentPrice: string, borrow: string, deposit: string) => {
+export const caculateCollRatio = (currentPrice: string, borrow: string, deposit: string) => {
   console.log('1111')
   if (!borrow || borrow === "" || !deposit || deposit === "") return "0%"
   const intCurrentPrice = parseFloat(currentPrice) ?? 0;

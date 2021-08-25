@@ -6,6 +6,7 @@ import { rem } from "../../helpers/common-function"
 import styled from "styled-components"
 import { orange } from "../../constants/color"
 import {CREATE_LOAN_STAGE} from "../../recoil/atoms";
+import LoanInformation from "../../components/LoanInformation";
 
 const ConfirmExamData = [
   {
@@ -34,25 +35,27 @@ interface Prop {
   onClickBack: () => void;
   onConfirm: () => void;
   loading?: boolean;
-  tx?: string
+  tx?: string;
+  review?: { label: string; value: string }[]
 }
 
-const ConfirmationLoanChange: React.FC<Prop> = ({ onClickBack, onConfirm, loading = false, tx }) => {
+const ConfirmationLoanChange: React.FC<Prop> = ({ onClickBack, onConfirm, loading = false, tx, review }) => {
   return (
     <>
       <CreateLoanTitle title={`Confirm Loan Changes`} lead={`Final review of loan details.`} />
-      <Grid columns={["2fr 1fr"]} sx={{ marginTop: 4, marginBottom: 3 }}>
-        {ConfirmExamData.map(({ label, value }, idx) => (
-          <React.Fragment key={idx}>
-            <CommonPTag fSize={14} weight={400}>
-              {label}
-            </CommonPTag>
-            <CommonPTag fSize={14} weight={900} tAlign={`right`}>
-              {value}
-            </CommonPTag>
-          </React.Fragment>
-        ))}
-      </Grid>
+      <LoanInformation loanInfo={review || []} />
+      {/*<Grid columns={["2fr 1fr"]} sx={{ marginTop: 4, marginBottom: 3 }}>*/}
+      {/*  {ConfirmExamData.map(({ label, value }, idx) => (*/}
+      {/*    <React.Fragment key={idx}>*/}
+      {/*      <CommonPTag fSize={14} weight={400}>*/}
+      {/*        {label}*/}
+      {/*      </CommonPTag>*/}
+      {/*      <CommonPTag fSize={14} weight={900} tAlign={`right`}>*/}
+      {/*        {value}*/}
+      {/*      </CommonPTag>*/}
+      {/*    </React.Fragment>*/}
+      {/*  ))}*/}
+      {/*</Grid>*/}
       <DivTextCenter>
         {tx ? (
           // Uncomment for moonbeam or kovan
