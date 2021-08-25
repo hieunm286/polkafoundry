@@ -15,9 +15,9 @@ export async function getServerSideProps(ctx: any) {
 
 const ListingLoan = () => {
   return (
-    <WithAuth>
+    <>
       <LoanList />
-    </WithAuth>
+    </>
   );
 };
 

@@ -16,7 +16,7 @@ import dsProxyRegistryAbi from "../../blockchain/abi/ds-proxy-registry.json"
 import Web3 from "web3"
 import { getProxyAddress } from "../../helpers/web3"
 
-const CreateProxy = () => {
+const CreateProxy = ({ onClickBack }: { onClickBack?: () => void }) => {
   const setCreateLoanStage = useSetRecoilState(createLoanStage)
   const address = useRecoilValue(connectionAccountState)
   const [userProxy, setUserProxy] = useRecoilState(proxyAccountAddress)
@@ -45,7 +45,7 @@ const CreateProxy = () => {
   return (
     <CreateProxyContainer>
       <Button onClick={handleCreateProxy}>Create proxy</Button>
-      <Back onClick={() => setCreateLoanStage(CREATE_LOAN_STAGE.editForm)}>Back to edit Loan</Back>
+      <Back onClick={() => onClickBack ? onClickBack() : setCreateLoanStage(CREATE_LOAN_STAGE.editForm)}>Back to edit Loan</Back>
     </CreateProxyContainer>
   )
 }

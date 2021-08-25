@@ -2,6 +2,7 @@ import React from 'react';
 import Layout from "../../../components/Layout";
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
 import LoanOverview from "../../../features/loan-overview/LoanOverview";
+import WithAuth from "../../../components/Authentication";
 
 export async function getServerSideProps(ctx: any) {
   return {
@@ -14,9 +15,9 @@ export async function getServerSideProps(ctx: any) {
 
 const LoanSummary = ({ address }: { address: string }) => {
   return (
-    <>
+    <WithAuth>
       <LoanOverview address={address} />
-    </>
+    </WithAuth>
   );
 };
 

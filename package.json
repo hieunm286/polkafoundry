@@ -33,6 +33,7 @@
     "react-dom": "17.0.2",
     "react-google-charts": "^3.0.15",
     "react-select": "^4.3.1",
+    "react-toastify": "^7.0.4",
     "recoil": "^0.4.0",
     "rxjs": "^7.3.0",
     "rxjs-take-while-inclusive": "^2.1.1",

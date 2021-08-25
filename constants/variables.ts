@@ -5,6 +5,7 @@ import mcdOsmAbi from "../blockchain/abi/mcd-osm.json"
 import { default as kovan } from "../blockchain/addresses/kovan.json"
 import { default as polkadot } from "../blockchain/addresses/polkadot.json"
 import { default as moonbeam } from "../blockchain/addresses/moonbeam.json"
+import {getCollateralJoinContracts} from "../blockchain/addresses/addressesUtils";
 
 export const WAD = new BigNumber("1e18")
 export const RAY = new BigNumber("1e27")
@@ -90,5 +91,20 @@ export const mcdData = (network = 'kovan') => {
       abi: mcdOsmAbi,
       address: MULTICHAIN[network].PIP_ETH
     }
+  }
+}
+
+export const MULTICHAIN_SETUP = {
+  kovan: {
+    token: { ...getCollateralJoinContracts(kovan) },
+    address: { ...kovan }
+  },
+  polka: {
+    token: { ...getCollateralJoinContracts(polkadot) },
+    address: { ...polkadot }
+  },
+  moonbeam: {
+    token: { ...getCollateralJoinContracts(moonbeam) },
+    address: { ...moonbeam }
   }
 }

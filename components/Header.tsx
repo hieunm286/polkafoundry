@@ -5,6 +5,7 @@ import Image from "next/image"
 import { useTranslation } from "next-i18next"
 import { useRecoilState } from "recoil"
 import { connectionAccountState } from "../recoil/atoms"
+import Link from "next/link"
 
 const AppHeader = () => {
   const { t, i18n } = useTranslation()
@@ -13,11 +14,18 @@ const AppHeader = () => {
   return (
     <HeaderContainer>
       <HeaderLeft>
-        <Logo src={`/images/icon/polka-icon.svg`} alt={``} />
-        <Image src={`/images/icon/polka-label.svg`} alt={``} width={65} height={15} />
+        <Link href={`/`}>
+          <Logo src={`/images/icon/polka-icon.svg`} alt={``} />
+        </Link>
+        <Link href={"/"}>
+          <Image src={`/images/icon/polka-label.svg`} alt={``} width={65} height={15} />
+        </Link>
         <HeaderMenu>
-          <MenuLink>{t("yourVaults")}</MenuLink>
-          <MenuLink>{t("openNewVaults")}</MenuLink>
+          {
+            address && <MenuLink><Link href={`/owner/${address}`}>{t("yourVaults")}</Link></MenuLink>
+
+          }
+          <MenuLink><Link href={`/loans/list`}>{t("openNewVaults")}</Link></MenuLink>
           {/*<MenuLink>{t("governance")}</MenuLink>*/}
         </HeaderMenu>
       </HeaderLeft>

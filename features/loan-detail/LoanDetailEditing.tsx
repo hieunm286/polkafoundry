@@ -1,37 +1,85 @@
 import React, { useCallback, useEffect, useState } from "react"
-import { Grid } from "theme-ui"
+import { Grid, Spinner } from "theme-ui"
 import CustomLoanInput from "../../components/CustomLoanInput"
-import { CommonPTag, DEFAULT_DEVICE } from "../../constants/styles"
+import { CommonPTag, CommonSpanTag, DEFAULT_DEVICE, DivTextCenter } from "../../constants/styles"
 import { fire, orange } from "../../constants/color"
-import { useRecoilValue } from "recoil"
-import { connectionAccountState } from "../../recoil/atoms"
-import { formatInputNumber, rem } from "../../helpers/common-function"
+import { useRecoilState, useRecoilValue } from "recoil"
+import {
+  connectionAccountState,
+  MANAGE_LOAN_STAGE,
+  manageLoanStage,
+  proxyAccountAddress,
+  triggerUpdate,
+} from "../../recoil/atoms"
+import {
+  caculatorMaxpUSD,
+  checkLoanOwner,
+  formatFiatBalance,
+  formatInputNumber,
+  notifySuccess,
+  rem,
+} from "../../helpers/common-function"
 import styled from "styled-components"
-import { getETHBalance, getTotalBalance } from "../../helpers/web3"
-
-const ERRORS_LIST = {
-  greaterThanBalance: "You cannot deposit more collateral than the amount in your wallet",
-}
+import {
+  Amount,
+  checkApprove,
+  getDepositAndGenerateCallData,
+  getETHBalance,
+  getOpenCallData,
+  getTotalBalance,
+  getWithdrawAndPaybackCallData,
+  initialContract,
+  LockAmount,
+  OpenCallData,
+  WithdrawAndPaybackData,
+} from "../../helpers/web3"
+import { ethers } from "ethers"
+import Web3 from "web3"
+import dsProxyAbi from "../../blockchain/abi/ds-proxy.json"
+import erc20 from "../../blockchain/abi/erc20.json"
+import {
+  CDP_MANAGER,
+  ETH,
+  MCD_DAI,
+  MCD_JOIN_DAI,
+  MCD_JOIN_ETH_A,
+  MCD_JUG,
+  PROXY_ACTIONS,
+} from "../../blockchain/addresses/kovan.json"
+import dsProxyActionsAbi from "../../blockchain/abi/dss-proxy-actions.json"
+import { BigNumber } from "bignumber.js"
+import ConfirmationLoanChange from "./ConfirmationLoanChange"
+import { ERRORS_LIST } from "./CollateralEditing"
+import { MaxUint } from "../../constants/variables"
 
 interface LoanDetailEditProps {
   onClickNext: () => void
+  loanInfo: any
 }
 
-const LoanDetailEditing: React.FC<LoanDetailEditProps> = ({ onClickNext }) => {
+const LoanDetailEditing: React.FC<LoanDetailEditProps> = ({ onClickNext, loanInfo }) => {
   const address = useRecoilValue(connectionAccountState)
   const [depositValue, setDepositValue] = useState("")
-  const [borrowValue, setBorrowValue] = useState("")
+  const [withdrawValue, setWithdrawValue] = useState("")
   const [showAdvanceDeposit, setShowAdvanceDeposit] = useState(false)
-  const [showAdvanceBorrow, setShowAdvanceBorrow] = useState(false)
+  const [showAdvanceWithdraw, setShowAdvanceWithdraw] = useState(false)
   const [advanceDeposit, setAdvanceDeposit] = useState("")
-  const [advanceBorrow, setAdvanceBorrow] = useState("")
+  const [advanceWithdraw, setAdvanceWithdraw] = useState("")
   const [balance, setBalance] = useState<string>("0")
   const [token, setToken] = useState<string>("")
   const [errors, setErrors] = useState<string[]>([])
+  const userProxy = useRecoilValue(proxyAccountAddress)
+  const [loading, setLoading] = useState(false)
+  const [tx, setTx] = useState(undefined)
+  const [approve, setApprove] = useState<boolean>(true)
+  const [manageStage, setManageStage] = useRecoilState(manageLoanStage)
+  const [trigger, setTrigger] = useRecoilState(triggerUpdate)
   const [advanceToken, setAdvanceToken] = useState({
     balance: "0",
+    withdrawBalance: "0",
     token: "",
   })
+  const [type, setType] = useState<"deposit" | "withdraw">("deposit")
 
   useEffect(() => {
     const getWalletBalance = async (): Promise<void> => {
@@ -39,164 +87,501 @@ const LoanDetailEditing: React.FC<LoanDetailEditProps> = ({ onClickNext }) => {
         if (!address) {
           return
         }
-        const { balance, token } = await getTotalBalance(address)
+        // For kovan
+        const balance = await getETHBalance(address)
         setBalance(balance)
-        setToken(token)
+        setToken("ETH")
+        setAdvanceToken({
+          token: "pUSD",
+          balance: formatFiatBalance(loanInfo?.detailData?.availableDebt),
+          withdrawBalance: formatFiatBalance(loanInfo?.detailData?.debt),
+        })
       } catch (err) {
         console.log(err.message)
       }
     }
 
     void getWalletBalance()
-  }, [address])
+  }, [address, loanInfo?.detailData?.availableDebt])
+
+  useEffect(() => {
+    if (!address || !userProxy) {
+      return
+    }
+
+    void checkApprove(erc20, MCD_DAI, address, userProxy).then(setApprove)
+  }, [])
+
+  useEffect(() => {
+    if (
+      (!advanceDeposit || advanceDeposit === "" || advanceDeposit === "0") &&
+      type === "deposit"
+    ) {
+      setDepositValue("")
+      setShowAdvanceDeposit(false)
+      setErrors([])
+    }
+
+    if (
+      (!advanceWithdraw || advanceWithdraw === "" || advanceWithdraw === "0") &&
+      type === "withdraw"
+    ) {
+      console.log("kkk")
+      setWithdrawValue("")
+      setShowAdvanceWithdraw(false)
+      setErrors([])
+    }
+  }, [advanceDeposit, advanceWithdraw, loanInfo?.detailData?.availableDebt, type])
+
+  useEffect(() => {
+    checkBorrowValid(advanceDeposit || "0", advanceToken.balance)
+  }, [
+    advanceDeposit,
+    advanceToken.balance,
+    depositValue,
+    withdrawValue,
+    loanInfo?.detailData?.freeCollateral,
+  ])
 
   const onChangeDeposit = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = formatInputNumber(e.target.value)
     checkIsGreaterThanBalance(value, balance)
 
     setDepositValue(value)
+    setAdvanceToken({
+      ...advanceToken,
+      balance: caculatorMaxpUSD(
+        value || "0",
+        loanInfo?.maxDebtPerUnitCollateral,
+        formatInputNumber(loanInfo?.detailData?.availableDebt?.toString()),
+      ),
+    })
   }
 
-  const onChangeBorrow = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const onChangeWithdraw = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log("abccc")
     const value = formatInputNumber(e.target.value)
-
-    setBorrowValue(value)
+    checkWithdrawValid(value, loanInfo?.detailData?.freeCollateral ?? "0")
+    setWithdrawValue(value)
   }
 
-  const checkIsGreaterThanBalance = useCallback((input: string, balance: string) => {
-    if (parseFloat(input) > parseFloat(balance)) {
-      const newErrors = [...errors]
-      if (!newErrors.includes(ERRORS_LIST.greaterThanBalance)) {
-        newErrors.push(ERRORS_LIST.greaterThanBalance)
+  const checkIsGreaterThanBalance = useCallback(
+    (input: string, balance: string) => {
+      const cInput = parseFloat(input)
+      const cCurrent = parseFloat(balance)
+      const setError = new Set(errors)
+      if (cInput > cCurrent) {
+        setError.add(ERRORS_LIST.greaterThanBalance)
+      } else {
+        setError.delete(ERRORS_LIST.greaterThanBalance)
       }
-      setErrors(newErrors)
-    } else {
-      const newErrors = errors.filter((error) => error !== ERRORS_LIST.greaterThanBalance)
-      setErrors(newErrors)
-    }
-  }, [])
+
+      const newError = Array.from(setError)
+      setErrors(newError)
+    },
+    [balance, errors.length],
+  )
+
+  const checkDebtValid = useCallback(
+    (input: string, current: string) => {
+      const cInput = parseFloat(input)
+      const cCurrent = parseFloat(current)
+      const setError = new Set(errors)
+      if (cInput > cCurrent) {
+        setError.add(ERRORS_LIST.greaterThanMaxPUSD)
+      } else if (cCurrent - cInput < 100 && cCurrent !== cInput) {
+        setError.add(ERRORS_LIST.pUSDMustBe0OrGt100)
+      } else {
+        setError.delete(ERRORS_LIST.greaterThanMaxPUSD)
+        setError.delete(ERRORS_LIST.pUSDMustBe0OrGt100)
+      }
+
+      const newError = Array.from(setError)
+      setErrors(newError)
+    },
+    [advanceToken.withdrawBalance, errors.length],
+  )
+
+  const checkBorrowValid = useCallback(
+    (input: string, current: string) => {
+      const cInput = parseFloat(input)
+      const cCurrent = parseFloat(current)
+      const setError = new Set(errors)
+      console.log(cCurrent)
+      if (cInput > cCurrent) {
+        setError.add(ERRORS_LIST.greaterThanBorrowPUSD)
+      } else {
+        setError.delete(ERRORS_LIST.greaterThanBorrowPUSD)
+      }
+      const newError = Array.from(setError)
+      setErrors(newError)
+    },
+    [advanceToken.balance, errors.length],
+  )
+
+  const checkWithdrawValid = useCallback(
+    (input: string, current: string) => {
+      const cInput = parseFloat(input)
+      const cCurrent = parseFloat(current)
+      const setError = new Set(errors)
+      console.log(cInput)
+      console.log(cCurrent)
+      if (cInput > cCurrent) {
+        setError.add(ERRORS_LIST.greaterThanAvailableWithdraw)
+      } else {
+        setError.delete(ERRORS_LIST.greaterThanAvailableWithdraw)
+      }
+      const newError = Array.from(setError)
+      setErrors(newError)
+    },
+    [loanInfo?.detailData?.freeCollateral, errors.length],
+  )
+
+  console.log(errors)
 
   const onChangeAdvanceDeposit = (e: React.ChangeEvent<HTMLInputElement>) => {
-    checkIsGreaterThanBalance(e.target.value, advanceToken.balance)
+    // checkBorrowValid(e.target.value, advanceToken.balance)
     setAdvanceDeposit(formatInputNumber(e.target.value))
+    if (!e.target.value || e.target.value === "") {
+      setErrors([])
+      setAdvanceToken({
+        ...advanceToken,
+        balance: formatFiatBalance(loanInfo?.detailData?.availableDebt),
+      })
+    }
+    if (type !== "deposit") {
+      setType("deposit")
+    }
   }
 
-  const onChangeAdvanceBorrow = (e: React.ChangeEvent<HTMLInputElement>) => {
-    checkIsGreaterThanBalance(e.target.value, advanceToken.balance)
-    setAdvanceBorrow(formatInputNumber(e.target.value))
+  const onChangeAdvanceWithdraw = (e: React.ChangeEvent<HTMLInputElement>) => {
+    checkDebtValid(e.target.value, advanceToken.withdrawBalance)
+    setAdvanceWithdraw(formatInputNumber(e.target.value))
+    if (type !== "withdraw") {
+      setType("withdraw")
+    }
   }
 
   const onChangeShowAdvanceDeposit = async (): Promise<void> => {
     try {
       if (!showAdvanceDeposit) {
-        const balance = await getETHBalance(address)
-        setAdvanceToken({ balance: formatInputNumber(balance), token: "ETH" })
+        setDepositValue("")
+        setShowAdvanceWithdraw(false)
       }
       setShowAdvanceDeposit(!showAdvanceDeposit)
     } catch (err) {}
   }
 
-  const onChangeShowAdvanceBorrow = async (): Promise<void> => {
+  const onChangeShowAdvanceWithdraw = async (): Promise<void> => {
     try {
-      if (!showAdvanceBorrow) {
-        const balance = await getETHBalance(address)
-        setAdvanceToken({ balance: formatInputNumber(balance), token: "ETH" })
+      if (!showAdvanceWithdraw) {
+        setWithdrawValue("")
+        setShowAdvanceDeposit(false)
       }
-      setShowAdvanceBorrow(!showAdvanceBorrow)
+      setShowAdvanceWithdraw(!showAdvanceWithdraw)
     } catch (err) {}
+  }
+
+  const onClickBack = () => {
+    setManageStage(MANAGE_LOAN_STAGE.editForm)
+    setTx(undefined)
+  }
+
+  const handleClickApprove = async () => {
+    if (!address || !userProxy) return
+    try {
+      const contract = initialContract(erc20, MCD_DAI)
+      await contract.methods
+        .approve(userProxy, MaxUint)
+        .send(
+          {
+            from: address,
+          },
+          () => {
+            setLoading(true)
+          },
+        )
+        .on("error", () => {
+          setLoading(false)
+        })
+        .on("receipt", function () {
+          setLoading(false)
+          setApprove(true)
+        })
+    } catch (err) {}
+  }
+
+  const handleConfirmChangeLoan = async () => {
+    if (!address || !userProxy || !loanInfo) return
+    const web3 = new Web3(Web3.givenProvider)
+    const contract = new web3.eth.Contract(dsProxyAbi as any, userProxy)
+
+    const context: OpenCallData = {
+      dssProxyActions: dsProxyActionsAbi,
+      dssCdpManager: CDP_MANAGER,
+      mcdJug: MCD_JUG,
+      mcdJoinDai: MCD_JOIN_DAI,
+      joinsIlk: MCD_JOIN_ETH_A,
+    }
+
+    const amount: LockAmount = {
+      id: loanInfo.detailData.id,
+      depositAmount: depositValue,
+      borrowAmount: advanceDeposit,
+      proxyAddress: userProxy,
+      ilk: loanInfo.detailData.ilk,
+      token: "ETH",
+    }
+
+    try {
+      const encodeData = getDepositAndGenerateCallData(amount, context).encodeABI()
+      console.log("encodeData", encodeData)
+      await contract.methods
+        .execute(PROXY_ACTIONS, encodeData)
+        .send(
+          {
+            from: address,
+            value: Web3.utils.toWei(`${depositValue || "0"}`, "ether"),
+            gas: 807021,
+            gasPrice: new BigNumber({
+              s: 1,
+              e: 9,
+              c: [2020000000],
+              _isBigNumber: true,
+            }),
+          },
+          // eslint-disable-next-line handle-callback-err
+          function (err, receipt) {
+            console.log(receipt)
+            setLoading(true)
+          },
+        )
+        // eslint-disable-next-line handle-callback-err
+        .on("error", function (error, receipt) {
+          console.log(receipt)
+          setLoading(false)
+        })
+        .on("receipt", function (receipt) {
+          console.log(receipt)
+          setTx(receipt.transactionHash)
+          setLoading(false)
+          setTrigger(!trigger)
+          notifySuccess("✅ Transaction submitted successfully")
+        })
+    } catch (err) {
+      console.log(err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleWithdraw = async () => {
+    if (!address || !userProxy || !loanInfo) return
+    const web3 = new Web3(Web3.givenProvider)
+    const contract = new web3.eth.Contract(dsProxyAbi as any, userProxy)
+    const shouldPaybackAll =
+      parseInt(`${parseFloat(advanceToken.balance) - parseFloat(advanceWithdraw)}`) === 0
+
+    console.log("shouldPaybackAll", shouldPaybackAll)
+
+    const context: OpenCallData = {
+      dssProxyActions: dsProxyActionsAbi,
+      dssCdpManager: CDP_MANAGER,
+      mcdJug: MCD_JUG,
+      mcdJoinDai: MCD_JOIN_DAI,
+      joinsIlk: MCD_JOIN_ETH_A,
+    }
+
+    const amount: WithdrawAndPaybackData = {
+      id: loanInfo.detailData.id,
+      withdrawAmount: withdrawValue,
+      paybackAmount: advanceWithdraw,
+      proxyAddress: userProxy,
+      ilk: loanInfo.detailData.ilk,
+      token: "ETH",
+      shouldPaybackAll: shouldPaybackAll,
+    }
+
+    try {
+      const encodeData = getWithdrawAndPaybackCallData(amount, context).encodeABI()
+      console.log("encodeData", encodeData)
+      await contract.methods
+        .execute(PROXY_ACTIONS, encodeData)
+        .send(
+          {
+            from: address,
+            // value: Web3.utils.toWei(`${depositValue}`, "ether"),
+            // gas: 807021,
+            // gasPrice: new BigNumber({
+            //   s: 1,
+            //   e: 9,
+            //   c: [2020000000],
+            //   _isBigNumber: true,
+            // }),
+          },
+          // eslint-disable-next-line handle-callback-err
+          function (err, receipt) {
+            console.log(receipt)
+            setLoading(true)
+          },
+        )
+        // eslint-disable-next-line handle-callback-err
+        .on("error", function (error, receipt) {
+          console.log(receipt)
+          setLoading(false)
+        })
+        .on("receipt", function (receipt) {
+          console.log(receipt)
+          setTx(receipt.transactionHash)
+          setLoading(false)
+          setTrigger(!trigger)
+          notifySuccess("✅ Transaction submitted successfully")
+        })
+    } catch (err) {
+      console.log(err)
+    }
+  }
+
+  const handleConfirm = async () => {
+    if (type === "deposit") {
+      await handleConfirmChangeLoan()
+    } else if (type === "withdraw") {
+      await handleWithdraw()
+    }
   }
 
   return (
     <div>
-      <Grid>
-        <CustomLoanInput
-          value={depositValue}
-          onChange={(e) => onChangeDeposit(e)}
-          walletLabel={"In Wallet"}
-          maxValue={balance}
-          token={token}
-          action={`Deposit`}
-          showExchangeUSDT={false}
-          disabled={parseFloat(borrowValue) > 0}
-          showMax={false}
+      {manageStage === MANAGE_LOAN_STAGE.confirmation && (
+        <ConfirmationLoanChange
+          onClickBack={onClickBack}
+          onConfirm={handleConfirm}
+          loading={loading}
+          tx={tx}
         />
-        {parseFloat(depositValue) > 0 && (
-          <>
-            <Advance fSize={14} fColor={orange} weight={500} onClick={onChangeShowAdvanceDeposit}>
-              {showAdvanceDeposit ? "--" : "+"} Also deposit ETH with this transaction
-            </Advance>
-            {showAdvanceDeposit && (
-              <CustomLoanInput
-                value={advanceBorrow}
-                onChange={(e) => onChangeAdvanceBorrow(e)}
-                walletLabel={"In Wallet"}
-                maxValue={advanceToken.balance}
-                token={advanceToken.token}
-                action={``}
-                showExchangeUSDT={true}
-                showMax={true}
-              />
+      )}
+      {manageStage === MANAGE_LOAN_STAGE.editForm && (
+        <Grid>
+          <CustomLoanInput
+            value={advanceDeposit}
+            onChange={(e) => onChangeAdvanceDeposit(e)}
+            walletLabel={"Max"}
+            maxValue={advanceToken.balance}
+            token={advanceToken.token}
+            action={`Borrow`}
+            showExchangeUSDT={false}
+            disabled={parseFloat(advanceWithdraw) > 0}
+            showMax={false}
+          />
+          {checkLoanOwner(userProxy, loanInfo?.detailData?.owner) &&
+            parseFloat(advanceDeposit) > 0 && (
+              <>
+                <Advance
+                  fSize={14}
+                  fColor={orange}
+                  weight={500}
+                  onClick={onChangeShowAdvanceDeposit}
+                >
+                  {showAdvanceDeposit ? "--" : "+"} Also deposit ETH with this transaction
+                </Advance>
+                {showAdvanceDeposit && (
+                  <CustomLoanInput
+                    value={depositValue}
+                    onChange={(e) => onChangeDeposit(e)}
+                    walletLabel={"In Wallet"}
+                    maxValue={balance}
+                    token={token}
+                    action={``}
+                    showExchangeUSDT={true}
+                    showMax={true}
+                  />
+                )}
+              </>
             )}
-          </>
-        )}
-        <Divider>
-          <CommonPTag fColor={orange}>----------------------</CommonPTag>
-          <Or>
-            <CommonPTag fSize={12} weight={500}>
-              OR
-            </CommonPTag>
-          </Or>
-          <CommonPTag fColor={orange}>----------------------</CommonPTag>
-        </Divider>
-        <CustomLoanInput
-          value={borrowValue}
-          onChange={(e) => onChangeBorrow(e)}
-          walletLabel={"Max"}
-          maxValue={"600.05"}
-          token={`pUSD`}
-          action={`Borrow`}
-          showExchangeUSDT={false}
-          disabled={parseFloat(depositValue) > 0}
-          showMax={false}
-        />
-        {parseFloat(borrowValue) > 0 && (
-          <>
-            <Advance fSize={14} fColor={orange} weight={500} onClick={onChangeShowAdvanceBorrow}>
-              {showAdvanceBorrow ? "--" : "+"} Also withdraw ETH with this transaction
-            </Advance>
-            {showAdvanceBorrow && (
-              <CustomLoanInput
-                value={advanceDeposit}
-                onChange={(e) => onChangeAdvanceDeposit(e)}
-                walletLabel={"In Wallet"}
-                maxValue={advanceToken.balance}
-                token={advanceToken.token}
-                action={``}
-                showExchangeUSDT={true}
-                showMax={true}
-              />
+          <Divider>
+            <CommonPTag fColor={orange}>----------------------</CommonPTag>
+            <Or>
+              <CommonPTag fSize={12} weight={500}>
+                OR
+              </CommonPTag>
+            </Or>
+            <CommonPTag fColor={orange}>----------------------</CommonPTag>
+          </Divider>
+          <CustomLoanInput
+            value={advanceWithdraw}
+            onChange={(e) => onChangeAdvanceWithdraw(e)}
+            walletLabel={"Max"}
+            maxValue={advanceToken.withdrawBalance}
+            token={advanceToken.token}
+            action={`Payback`}
+            showExchangeUSDT={false}
+            disabled={parseFloat(advanceDeposit) > 0}
+            showMax={false}
+          />
+          {checkLoanOwner(userProxy, loanInfo?.detailData?.owner) &&
+            parseFloat(advanceWithdraw) > 0 && (
+              <>
+                <Advance
+                  fSize={14}
+                  fColor={orange}
+                  weight={500}
+                  onClick={onChangeShowAdvanceWithdraw}
+                >
+                  {showAdvanceWithdraw ? "--" : "+"} Also withdraw ETH with this transaction
+                </Advance>
+                {showAdvanceWithdraw && (
+                  <CustomLoanInput
+                    value={withdrawValue}
+                    onChange={(e) => onChangeWithdraw(e)}
+                    walletLabel={"Max"}
+                    maxValue={loanInfo?.detailData?.freeCollateral ?? "0"}
+                    token={loanInfo?.token}
+                    action={``}
+                    showExchangeUSDT={true}
+                    showMax={true}
+                  />
+                )}
+              </>
             )}
-          </>
-        )}
-        {errors.length > 0 && (
-          <ErrorContainer>
-            {
-              // eslint-disable-next-line handle-callback-err
-              errors.map((err, idx) => (
-                <Grid key={idx} columns={["5px 1fr"]}>
-                  <CommonPTag fSize={12} weight={400} fColor={fire}>
-                    •
-                  </CommonPTag>
-                  <CommonPTag fSize={12} weight={400} fColor={fire}>
-                    {err}
-                  </CommonPTag>
-                </Grid>
-              ))
-            }
-          </ErrorContainer>
-        )}
-        <Button onClick={onClickNext}>Next</Button>
-      </Grid>
+          {errors.length > 0 && (
+            <ErrorContainer>
+              {
+                // eslint-disable-next-line handle-callback-err
+                errors.map((err, idx) => (
+                  <Grid key={idx} columns={["5px 1fr"]}>
+                    <CommonPTag fSize={12} weight={400} fColor={fire}>
+                      •
+                    </CommonPTag>
+                    <CommonPTag fSize={12} weight={400} fColor={fire}>
+                      {err}
+                    </CommonPTag>
+                  </Grid>
+                ))
+              }
+            </ErrorContainer>
+          )}
+
+          {!(advanceWithdraw && !approve) ? (
+            <Button
+              onClick={onClickNext}
+              disabled={
+                errors.length > 0 ||
+                ((!advanceDeposit || parseFloat(advanceDeposit) <= 0) &&
+                  (!advanceWithdraw || parseFloat(advanceWithdraw) <= 0))
+              }
+            >
+              {userProxy === ethers.constants.AddressZero ? "Create proxy" : "Next"}
+            </Button>
+          ) : (
+            <DivTextCenter>
+              <Button onClick={handleClickApprove} disabled={loading}>
+                {loading && <Spinner sx={{ color: "#500EC1", marginRight: 2 }} size={24} />}
+                <CommonSpanTag>Set allowance</CommonSpanTag>
+              </Button>
+            </DivTextCenter>
+          )}
+        </Grid>
+      )}
     </div>
   )
 }
@@ -236,12 +621,21 @@ const Advance = styled.p`
 `
 
 const Button = styled.button`
-  background: linear-gradient(to bottom, #903afd -13.58%, #492cff 102.52%);
+  background: ${(props) =>
+    props.disabled ? "#C8C6E5" : `linear-gradient(to bottom, #903afd -13.58%, #492cff 102.52%)`};
   border-radius: 32px;
-  margin: ${rem(20)} auto ${rem(10)};
+  margin: ${rem(20)} auto 0;
   border: none;
   cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   color: white;
+
+  span {
+    color: ${(props) => (props.disabled ? "#500EC1" : "white")};
+  }
+
   @media ${DEFAULT_DEVICE.tablet} {
     width: ${rem(218)};
     height: ${rem(40)};

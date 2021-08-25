@@ -8,7 +8,7 @@ import {
   calculateTokenPrecisionByValue,
   formatBigNumber,
   formatCryptoBalance,
-  formatInputNumber,
+  formatInputNumber, notifySuccess,
   rem,
 } from "../../helpers/common-function"
 import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil"
@@ -194,6 +194,7 @@ const LoanEditing = ({
           console.log(receipt)
           setTx(receipt.transactionHash)
           setLoading(false)
+          notifySuccess("✅ Transaction submitted successfully")
         })
     } catch (err) {
     } finally {

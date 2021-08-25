@@ -35,7 +35,9 @@ export const MANAGE_LOAN_STAGE = {
   editForm: 'Edit form',
   confirmation: "Confirmation",
   editFormCollateral: "Edit form collateral",
-  confirmationCollateral: "Confirmation collateral"
+  confirmationCollateral: "Confirmation collateral",
+  createProxy: 'Create proxy',
+  createProxyCollateral: "Create proxy collateral"
 }
 
 export const manageLoanStage = atom<string>({
@@ -43,7 +45,17 @@ export const manageLoanStage = atom<string>({
   default:CREATE_LOAN_STAGE.editForm
 })
 
-export const walletFullInformation = atom<any>({
-  key: "walletFullInformation",
+export const triggerUpdate = atom<boolean>({
+  key: "triggerUpdate",
+  default: false
+})
+
+export const pageLoading = atom<boolean>({
+  key: "pageLoading",
+  default: false
+})
+
+export const appContext = atom<any>({
+  key: 'appContext',
   default: undefined
 })

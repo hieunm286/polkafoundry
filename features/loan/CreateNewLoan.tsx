@@ -1,16 +1,16 @@
 import React, { useEffect, useMemo, useState } from "react"
 import TemplateCreate from "../../components/TemplateCreate"
 import styled from "styled-components"
-import {formatInputNumber, ilkToToken, rem} from "../../helpers/common-function"
+import {formatCryptoBalance, formatInputNumber, formatPercent, ilkToToken, rem} from "../../helpers/common-function"
 import { CommonPTag, Space } from "../../constants/styles"
 import LoanEditing from "./LoanEditing"
 import { useTranslation } from "next-i18next"
-import { useRecoilState, useRecoilValue } from "recoil"
+import {useRecoilState, useRecoilValue, useSetRecoilState} from "recoil"
 import {
   CREATE_LOAN_STAGE,
   createLoanStage,
   inputValueCreateLoanBorrow,
-  inputValueCreateLoanDeposite,
+  inputValueCreateLoanDeposite, pageLoading,
 } from "../../recoil/atoms"
 import CreateProxy from "./CreateProxy"
 import { Grid } from "theme-ui"
@@ -18,6 +18,7 @@ import { createOraclePriceData$ } from "../../helpers/pip/oracle"
 import { createIlkData$ } from "../../helpers/ilks"
 import {TagFilter} from "../../helpers/model";
 import {BigNumber} from "bignumber.js";
+import LoanInformation from "../../components/LoanInformation";
 
 export const CreateLoanTitle = ({ title, lead }: { title?: string; lead?: string }) => {
   const { t } = useTranslation()
@@ -52,11 +53,11 @@ export const caculateLiquidationPrice = (deposit: string, borrow: string, maxDeb
 }
 
 const CreateNewLoan = ({ ilk }: { ilk: string }) => {
-  console.log(ilk)
   const createStage = useRecoilValue(createLoanStage)
   const [loanInfo, setLoanInfo] = useState<any>()
   const [tagFilter, setTagFilter] = useState<TagFilter>("loanDetail")
   const { t } = useTranslation()
+  const setSpinning = useSetRecoilState(pageLoading)
 
   const onTagChain = (tagFilter: TagFilter) => {
     setTagFilter(tagFilter)
@@ -77,43 +78,44 @@ const CreateNewLoan = ({ ilk }: { ilk: string }) => {
     (): { label: string; value: string }[] => [
       {
         label: "available",
-        value: "1.08M pUSD",
+        value: loanInfo ? `${formatCryptoBalance(loanInfo?.ilkDebtAvailable)} pUSD` : '0 pUSD',
       },
       {
         label: "liquidationRatio",
-        value: "150%",
+        value: loanInfo ? formatPercent(loanInfo?.liquidationRatio?.times(100)) : '0%',
       },
       {
         label: "stabilityFee",
-        value: "4.05%",
+        value: loanInfo ? formatPercent(loanInfo?.stabilityFee?.times(100), { precision: 2 }) : '0%',
       },
       {
         label: "liquidationFee",
-        value: "13.06%",
+        value: loanInfo ? formatPercent(loanInfo?.liquidationPenalty?.times(100)) : '0%',
       },
       {
         label: "debtFloor",
-        value: "100 pUSD",
+        value: loanInfo ? `${formatCryptoBalance(loanInfo?.debtFloor)} pUSD` : '0 pUSD',
       },
     ],
-    [],
+    [loanInfo],
   )
 
   useEffect(() => {
     const setup = async () => {
       try {
+        setSpinning(true)
         const token = ilkToToken(ilk)
         const oracleData = await createOraclePriceData$(token)
         const ilkData = await createIlkData$(ilk)
-
-        console.log(oracleData)
-        console.log(ilkData)
 
         setLoanInfo({
           ...oracleData,
           ...ilkData,
         })
-      } catch (err) {}
+        setSpinning(false)
+      } catch (err) {
+        setSpinning(false)
+      }
     }
 
     void setup()
@@ -161,18 +163,7 @@ const CreateNewLoan = ({ ilk }: { ilk: string }) => {
         )}
         {
           createStage !== CREATE_LOAN_STAGE.confirmation && (
-            <Grid columns={[1]} sx={{ marginTop: "3" }}>
-              {PUSDInfo.map(({ label, value }, idx) => (
-                <Grid columns={["1fr 1fr"]} key={idx}>
-                  <CommonPTag fSize={12} weight={400}>
-                    {label}
-                  </CommonPTag>
-                  <CommonPTag fSize={12} weight={900} tAlign={`right`}>
-                    {value}
-                  </CommonPTag>
-                </Grid>
-              ))}
-            </Grid>
+            <LoanInformation loanInfo={PUSDInfo} />
           )
         }
 

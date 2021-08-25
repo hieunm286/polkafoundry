@@ -1,6 +1,7 @@
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
 import Layout from "../../../components/Layout";
 import CreateNewLoan from "../../../features/loan/CreateNewLoan";
+import WithAuth from "../../../components/Authentication";
 
 export async function getServerSideProps(ctx: any) {
   return {
@@ -13,9 +14,9 @@ export async function getServerSideProps(ctx: any) {
 
 export default function NewLoan({ ilk }: { ilk: string }) {
   return (
-    <>
+    <WithAuth>
       <CreateNewLoan ilk={ilk} />
-    </>
+    </WithAuth>
   )
 }
 

@@ -10,6 +10,10 @@ import { RecoilRoot } from "recoil"
 import nextI18NextConfig from "../next-i18next.config.js"
 import { appWithTranslation } from "next-i18next"
 import { theme } from "../theme-ui"
+import { ToastContainer } from "react-toastify"
+import 'react-toastify/dist/ReactToastify.css';
+import 'react-toastify/dist/ReactToastify.min.css';
+import PageSpinning from "../components/PageSpinning";
 
 const ThemeUI = require("theme-ui").ThemeProvider
 
@@ -41,9 +45,13 @@ const MyApp: React.FC<CustomAppProps> = ({ Component, pageProps }) => {
 
   return (
     <ThemeProvider theme={lightTheme}>
+      <ToastContainer />
       <GlobalStyles />
       <ThemeUI theme={theme}>
-        <RecoilRoot>{getLayout(<Component {...pageProps} />)}</RecoilRoot>
+        <RecoilRoot>
+          {getLayout(<Component {...pageProps} />)}
+          <PageSpinning />
+        </RecoilRoot>
       </ThemeUI>
     </ThemeProvider>
   )

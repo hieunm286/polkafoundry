@@ -6,6 +6,7 @@ import Decimal from "decimal.js"
 import React from "react"
 import Web3 from "web3"
 import { RAD, RAY, WAD } from "../constants/variables"
+import {toast} from "react-toastify";
 
 BigNumber.config({
   FORMAT: {
@@ -241,4 +242,30 @@ export function formatFiatBalance(amount?: BigNumber): string {
   // We don't want to have numbers like 999999 formatted as 999.99k
 
   return formatAsShorthandNumbers(amount, 2)
+}
+
+export function checkLoanOwner(proxyAddress?: string, loanOwner?: string) {
+  if (!proxyAddress || !loanOwner) return false;
+  return proxyAddress === loanOwner
+}
+
+export function caculatorMaxpUSD(deposit: string, ratio: BigNumber, oldValue = '0') {
+  console.log(deposit)
+  console.log(ratio)
+  console.log(oldValue)
+  const cvDeposit = formatInputNumber(deposit)
+  const cvRatio = formatInputNumber(ratio.toString())
+  return formatInputNumber(`${parseFloat(cvDeposit) * parseFloat(cvRatio) + parseFloat(oldValue)}`, 2)
+}
+
+export const notifySuccess = (message) => {
+  toast.success(message, {
+    position: 'top-right',
+    autoClose: 5000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+    progress: undefined,
+  });
 }

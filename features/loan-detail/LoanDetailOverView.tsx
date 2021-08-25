@@ -1,21 +1,20 @@
-import React, {useEffect, useMemo, useState} from "react"
-import {ilkToToken, rem} from "../../helpers/common-function"
+import React, { useEffect, useMemo, useState } from "react"
+import { ilkToToken, rem } from "../../helpers/common-function"
 import styled from "styled-components"
 import TemplateCreate from "../../components/TemplateCreate"
-import { MANAGE_LOAN_STAGE, manageLoanStage } from "../../recoil/atoms"
+import {MANAGE_LOAN_STAGE, manageLoanStage, pageLoading, triggerUpdate} from "../../recoil/atoms"
 import { FiltersWithPopular } from "../vaults-list/FiltersWithPopular"
 import { TagFilter } from "../../helpers/model"
 import { useTranslation } from "next-i18next"
-import { useRecoilState } from "recoil"
+import {useRecoilState, useRecoilValue, useSetRecoilState} from "recoil"
 import PUSDFilter from "./PUSDFilter"
 import Collateral from "./Collateral"
-import {fetchLoanById} from "../loan-overview/LoanOverviewHandle";
-import {createOraclePriceData$} from "../../helpers/pip/oracle";
-import {createIlkData$} from "../../helpers/ilks";
+import { fetchLoanById } from "../loan-overview/LoanOverviewHandle"
+import { createOraclePriceData$ } from "../../helpers/pip/oracle"
+import { createIlkData$ } from "../../helpers/ilks"
+import PageSpinning from "../../components/PageSpinning";
 
-const getCollateral = () => {
-
-}
+const getCollateral = () => {}
 
 const LoanDetailOverView = ({ loan }: { loan: string }) => {
   const { t } = useTranslation()
@@ -23,6 +22,8 @@ const LoanDetailOverView = ({ loan }: { loan: string }) => {
   const [manageStage, setManageState] = useRecoilState(manageLoanStage)
   const [loanInfo, setLoanInfo] = useState<any>()
   const [detailTagFilter, setDetailTagFilter] = useState<TagFilter>("loanDetail")
+  const setPageLoading = useSetRecoilState(pageLoading)
+  const trigger = useRecoilValue(triggerUpdate)
 
   const onDetailTagChain = (tagFilter: TagFilter) => {
     setDetailTagFilter(tagFilter)
@@ -41,20 +42,27 @@ const LoanDetailOverView = ({ loan }: { loan: string }) => {
 
   useEffect(() => {
     const data = async () => {
-      const detail = await fetchLoanById(loan)
-      const token = ilkToToken(detail.ilk)
-      const oracleData = await createOraclePriceData$(token)
-      const ilkData = await createIlkData$(detail.ilk)
-      const rs = {
-        ...oracleData,
-        ...ilkData,
-        detailData: detail
+      try {
+        setPageLoading(true)
+        const detail = await fetchLoanById(loan)
+        const token = ilkToToken(detail.ilk)
+        const oracleData = await createOraclePriceData$(token)
+        const ilkData = await createIlkData$(detail.ilk)
+        const rs = {
+          ...oracleData,
+          ...ilkData,
+          detailData: detail,
+        }
+        setLoanInfo(rs)
+        setPageLoading(false)
+      } catch (err) {
+
       }
-      setLoanInfo(rs)
+
     }
 
     void data()
-  }, [loan])
+  }, [loan, trigger])
 
   const options = useMemo(
     (): { value: TagFilter; label: string }[] => [
@@ -81,7 +89,13 @@ const LoanDetailOverView = ({ loan }: { loan: string }) => {
 
   return (
     <CreateContainer>
-      <TemplateCreate title={"ETH-A Loan # " + loan} loanInfo={loanInfo} tagFilter={detailTagFilter} options={detailOptions} onTagChain={onDetailTagChain} />
+      <TemplateCreate
+        title={"ETH-A Loan # " + loan}
+        loanInfo={loanInfo}
+        tagFilter={detailTagFilter}
+        options={detailOptions}
+        onTagChain={onDetailTagChain}
+      />
       <CreateCard>
         {(manageStage === MANAGE_LOAN_STAGE.editForm ||
           manageStage === MANAGE_LOAN_STAGE.editFormCollateral) && (
@@ -95,8 +109,8 @@ const LoanDetailOverView = ({ loan }: { loan: string }) => {
           />
         )}
 
-        {tagFilter === "pUSD" && <PUSDFilter tagFilter={tagFilter} />}
-        {tagFilter === "collateral" && <Collateral tagFilter={tagFilter} />}
+        {tagFilter === "pUSD" && <PUSDFilter tagFilter={tagFilter} loanInfo={loanInfo} />}
+        {tagFilter === "collateral" && <Collateral tagFilter={tagFilter} loanInfo={loanInfo} />}
       </CreateCard>
     </CreateContainer>
   )
@@ -120,6 +134,6 @@ const CreateCard = styled.div`
   right: 10%;
 
   padding: ${rem(30)} ${rem(35)};
-
+  z-index: 100;
   overflow-y: auto;
 `

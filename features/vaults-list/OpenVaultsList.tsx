@@ -5,6 +5,8 @@ import TemplateListing from "../../components/TemplateListing"
 import { Box, Button, Text } from "theme-ui"
 import { Trans, useTranslation } from "next-i18next"
 import Link from "next/link"
+import {useRecoilValue} from "recoil";
+import {appContext} from "../../recoil/atoms";
 
 const ilksColumns: any = [
   {
@@ -90,6 +92,9 @@ const OpenVaultsList = () => {
   const [searchText, setSearchtext] = useState<string>("")
   const [tagFilter, setTagFilter] = useState<TagFilter>("popular")
   const { t } = useTranslation()
+  const AppContext = useRecoilValue(appContext)
+
+  console.log(AppContext)
 
   const onSearch = (value: string) => {
     setSearchtext(value)

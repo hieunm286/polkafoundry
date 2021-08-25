@@ -15,7 +15,18 @@
     "pUSDStable2": "pUSD – The Stablecoin",
     "tutorial": "Get pUSD by depositing crypto assets as collaterals",
     "borrowPUSD": "Borrow pUSD",
-    "buyPUSD": "Buy pUSD"
+    "buyPUSD": "Buy pUSD",
+    "learnMore": "Learn more",
+    "contactUs": "Contact Us",
+    "getQuestion": "Got questions or concerns? Feel free to let us know at",
+    "about": "About",
+    "support": "Support",
+    "landingPage": "Landing Page",
+    "whitePaper": "Whitepaper",
+    "term": "Terms & Conditions",
+    "privacy": "Privacy",
+    "faq": "FAQs",
+    "oraclePrice": "Oracle Price"
   },
   "loanList": {
     "title": "Borrow pUSD by depositing crypto assets as collaterals",
@@ -28,7 +39,51 @@
     "stabilityFee": "Stability Fee",
     "liquidityRatio": "Liquidity Ratio",
     "liquidityPenalty": "Liquidity Penalty",
-    "pUSDAvailable": "pUSD Available"
+    "pUSDAvailable": "pUSD Available",
+    "vault-id": "Loan ID",
+    "liquidation-price": "Liquidation price",
+    "coll-ratio": "Coll. ratio",
+    "coll-locked": "Coll. locked",
+    "dai-debt": "pUSD debt"
   },
-  "empty": ""
+  "empty": "",
+  "createLoan": "Create Loan",
+  "manageLoan": "Manage Loan",
+  "search-token": "Search token",
+  "filters": {
+    "popular": "Popular",
+    "all-assets": "All assets",
+    "stablecoin": "Stable coins",
+    "loanDetail": "Loan detail",
+    "loanHistory": "Loan history",
+    "pUSD": "pUSD",
+    "collateral": "Collateral"
+  },
+  "all-assets": "All assets",
+  "yourVaults": "Your loans",
+  "openNewVaults": "Open new loans",
+  "liquidationPrice": "Liquidation price",
+  "collaterizationRatio": "Collaterization ratio",
+  "currentETHPrice": "Current ETH Price",
+  "nextPriceIn": "Next price in",
+  "goToOraclePrice": "Go to oracle price",
+  "collateralLocked": "Collateral locked",
+  "loanDetail": {
+    "outstandingDebt": "Outstanding Debt",
+    "availableToBorrow": "Available to borrow",
+    "availableToWithDraw": "Available To Withdraw",
+    "liquidationRatio": "Liquidation ratio",
+    "stabilityFee": "Stability Fee",
+    "liquidationPenalty": "Liquidation Penalty"
+  },
+  "available": "Available",
+  "liquidationRatio": "Liquidation Ratio",
+  "stabilityFee": "Stability Fee",
+  "liquidationFee": "Liquidation Fee",
+  "debtFloor": "Debt floor",
+  "connectWallet": "Connect wallet",
+  "setUpLoad": "Set up Loan",
+  "setUpLoanLead": "Input amount of collateral to deposit and tokens to borrow.",
+  "createProxy": "Create proxy",
+  "borrowMore": "Borrow more  or pay back tokens"
 }

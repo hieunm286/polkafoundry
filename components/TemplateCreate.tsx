@@ -97,6 +97,7 @@ const loanHistoryColumn: ColumnDef<LoanHistory, any>[] = [
 ]
 
 const caculateCollRatio = (currentPrice: string, borrow: string, deposit: string) => {
+  console.log('1111')
   if (!borrow || borrow === "" || !deposit || deposit === "") return "0%"
   const intCurrentPrice = parseFloat(currentPrice) ?? 0;
   const intBorrow = parseFloat(borrow) ?? 0;
@@ -104,11 +105,10 @@ const caculateCollRatio = (currentPrice: string, borrow: string, deposit: string
 
   if (intCurrentPrice === 0 || intBorrow === 0) return '0%'
 
-  console.log(intCurrentPrice)
+  console.log(intDeposit * intCurrentPrice / intBorrow)
   console.log(intBorrow)
 
-  const big = new BigNumber(intDeposit * intCurrentPrice / intBorrow)
-  return formatPercent(big.times(100))
+  return formatInputNumber((intDeposit * intCurrentPrice / intBorrow) * 100) + '%'
 }
 
 const TemplateCreate: React.FC<TemplateProp> = ({
@@ -213,7 +213,7 @@ const TemplateCreate: React.FC<TemplateProp> = ({
             <CommonPTag fSize={14} fColor={silver} weight={400}>
               ${nextPrice ? formatFiatBalance(nextPrice) : 0}
             </CommonPTag>
-            <Link href={""}>
+            <Link href={"/"}>
               <CommonPTag fSize={14} fColor={orange} weight={500} m={"10px 0 0 0"}>
                 {t("goToOraclePrice")}
               </CommonPTag>

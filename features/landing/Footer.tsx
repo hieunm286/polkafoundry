@@ -10,18 +10,18 @@ const FOOTER_SECTION = [
     gap: 1,
     title: "homepage.about",
     link: [
-      { label: "home.landingPage", url: "/" },
-      { label: "home.whitePaper", url: "/" },
-      { label: "home.term", url: "/" },
-      { label: "home.privacy", url: "/" },
+      { label: "homepage.landingPage", url: "/" },
+      { label: "homepage.whitePaper", url: "/" },
+      { label: "homepage.term", url: "/" },
+      { label: "homepage.privacy", url: "/" },
     ],
   },
   {
     gap: 2,
     title: "homepage.support",
     link: [
-      { label: "home.faq", url: "/" },
-      { label: "home.oraclePrice", url: "/" },
+      { label: "homepage.faq", url: "/" },
+      { label: "homepage.oraclePrice", url: "/" },
     ],
   },
 ]

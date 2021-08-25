@@ -3,6 +3,7 @@ import { ETH, PROXY_REGISTRY } from "../blockchain/addresses/kovan.json"
 import dsProxyRegistryAbi from "../blockchain/abi/ds-proxy-registry.json"
 import erc20Abi from "../blockchain/abi/erc20.json"
 import {zero} from "../constants/zero";
+import {BigNumber} from "bignumber.js";
 
 export const changeChain = async () => {
   // console.log(fromToken);
@@ -112,6 +113,10 @@ export interface Amount {
   proxyAddress: string
 }
 
+export interface LockAmount extends Amount {
+  id: BigNumber
+}
+
 export const getOpenCallData = (data: Amount, context: OpenCallData) => {
   const { dssProxyActions, dssCdpManager, mcdJug, mcdJoinDai, joinsIlk } = context;
   const { ilk, token, depositAmount, borrowAmount, proxyAddress } = data;
@@ -146,4 +151,124 @@ export const getOpenCallData = (data: Amount, context: OpenCallData) => {
     Web3.utils.utf8ToHex(ilk),
     proxyAddress,
   )
+}
+
+export const getDepositAndGenerateCallData = (data: LockAmount, context: OpenCallData) => {
+  const { dssProxyActions, dssCdpManager, mcdJoinDai, mcdJug, joinsIlk } = context
+  const { id, depositAmount, borrowAmount, ilk, proxyAddress } = data
+
+  if (parseFloat(depositAmount) > 0 && parseFloat(borrowAmount) > 0) {
+    console.log('both deposit and borrow')
+    console.log(Web3.utils.utf8ToHex(ilk))
+    return initialContract(dssProxyActions, proxyAddress).methods.lockETHAndDraw(
+      dssCdpManager,
+      mcdJug,
+      joinsIlk,
+      mcdJoinDai,
+      id.toString(),
+      Web3.utils.toWei(borrowAmount, "ether")
+    )
+  }
+
+  if (parseFloat(depositAmount) > 0) {
+    console.log('only deposit')
+    return initialContract(dssProxyActions, proxyAddress).methods.lockETH(
+      dssCdpManager,
+      joinsIlk,
+      id.toString(),
+    )
+  }
+
+  return initialContract(dssProxyActions, proxyAddress).methods.draw(
+    dssCdpManager,
+    mcdJug,
+    mcdJoinDai,
+    id.toString(),
+    Web3.utils.toWei(borrowAmount, "ether")
+  )
+}
+
+export const checkApprove = async (abi: any, contract: string, owner: string, spender: string): Promise<boolean> => {
+  try {
+    const checkContract = initialContract(abi, contract)
+    const approve = await checkContract.methods.allowance(
+      owner,
+      spender
+    ).call()
+
+    if (!approve) {
+      return false
+    }
+    return approve > 0
+  } catch (err) {
+    console.log(err)
+    return false
+  }
+
+}
+
+export interface WithdrawAndPaybackData {
+  id: BigNumber
+  token: string
+  ilk: string
+  withdrawAmount: string
+  paybackAmount: string
+  proxyAddress: string
+  shouldPaybackAll: boolean
+}
+
+export const getWithdrawAndPaybackCallData = (data: WithdrawAndPaybackData, context: OpenCallData) => {
+  const { dssProxyActions, dssCdpManager, mcdJoinDai, joinsIlk } = context;
+  const { id, token, withdrawAmount, paybackAmount, ilk, shouldPaybackAll, proxyAddress } = data
+
+  if (parseFloat(withdrawAmount) > 0 && parseFloat(paybackAmount) > 0) {
+    console.log('both deposit and borrow')
+    console.log(withdrawAmount)
+    if (shouldPaybackAll) {
+      return initialContract(dssProxyActions, proxyAddress).methods.wipeAllAndFreeETH(
+        dssCdpManager,
+        joinsIlk,
+        mcdJoinDai,
+        id.toString(),
+        Web3.utils.toWei(withdrawAmount, "ether")
+      )
+    }
+    return initialContract(dssProxyActions, proxyAddress).methods.wipeAndFreeETH(
+      dssCdpManager,
+      joinsIlk,
+      mcdJoinDai,
+      id.toString(),
+      Web3.utils.toWei(withdrawAmount, "ether"),
+      Web3.utils.toWei(paybackAmount, "ether")
+    )
+  }
+
+  if (parseFloat(withdrawAmount) > 0) {
+    console.log('only deposit')
+    return initialContract(dssProxyActions, proxyAddress).methods.freeETH(
+      dssCdpManager,
+      joinsIlk,
+      id.toString(),
+      Web3.utils.toWei(withdrawAmount, "ether"),
+    )
+  }
+
+  if (parseFloat(paybackAmount) > 0) {
+    console.log('only payback')
+    if (shouldPaybackAll) {
+      return initialContract(dssProxyActions, proxyAddress).methods.wipeAll(
+        dssCdpManager,
+        mcdJoinDai,
+        id.toString(),
+      )
+    }
+    return initialContract(dssProxyActions, proxyAddress).methods.wipe(
+      dssCdpManager,
+      mcdJoinDai,
+      id.toString(),
+      Web3.utils.toWei(paybackAmount, "ether"),
+    )
+  }
+
+  return false;
 }

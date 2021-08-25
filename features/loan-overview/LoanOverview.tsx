@@ -13,7 +13,7 @@ import {
 } from "../../helpers/common-function"
 import { CommonPTag, DEFAULT_DEVICE, Space } from "../../constants/styles"
 import styled from "styled-components"
-import { CREATE_LOAN_STAGE } from "../../recoil/atoms"
+import {CREATE_LOAN_STAGE, pageLoading} from "../../recoil/atoms"
 import LoanEditing from "../loan/LoanEditing"
 import CreateProxy from "../loan/CreateProxy"
 import { ColumnDef, Table, TableSortHeader } from "../../components/Table"
@@ -24,10 +24,19 @@ import { fetchAllLoansByAddress } from "./LoanOverviewHandle"
 import { getToken } from "../../blockchain/tokensMetadata"
 import { Icon } from "@makerdao/dai-ui-icons"
 import {filterByTag} from "../../helpers/ilks";
+import {useSetRecoilState} from "recoil";
 
 const vaultsColumns: ColumnDef<any, any>[] = [
   {
-    headerLabel: "system.asset",
+    headerLabel: "system.assets",
+    header: (abc: any) => {
+      console.log(abc)
+      return <p>{abc.label}</p>
+    },
+    cell: ({ token }: any) => <>{token}</>,
+  },
+  {
+    headerLabel: "system.type",
     header: ({ label }) => <Text variant="tableHead">{label}</Text>,
     cell: ({ ilk, token }) => {
       // const tokenInfo = getToken(token)
@@ -68,17 +77,17 @@ const vaultsColumns: ColumnDef<any, any>[] = [
       )
     },
   },
-  {
-    headerLabel: "system.coll-locked",
-    header: ({ label, ...filters }) => (
-      <Text variant="tableHead">{label}</Text>
-    ),
-    cell: ({ lockedCollateral, token }) => (
-      <Text sx={{ textAlign: "right" }}>
-        {formatCryptoBalance(lockedCollateral)} {token}
-      </Text>
-    ),
-  },
+  // {
+  //   headerLabel: "system.coll-locked",
+  //   header: ({ label, ...filters }) => (
+  //     <Text variant="tableHead">{label}</Text>
+  //   ),
+  //   cell: ({ lockedCollateral, token }) => (
+  //     <Text sx={{ textAlign: "right" }}>
+  //       {formatCryptoBalance(lockedCollateral)} {token}
+  //     </Text>
+  //   ),
+  // },
   {
     headerLabel: "system.dai-debt",
     header: ({ label, ...filters }) => (
@@ -92,11 +101,17 @@ const vaultsColumns: ColumnDef<any, any>[] = [
     headerLabel: "",
     header: () => <Text />,
     cell: ({ id }) => {
-      const { t } = useTranslation()
       return (
         <Box sx={{ flexGrow: 1, textAlign: "right" }}>
           <Link as={`/${id}`} href={`/[loan]`}>
-            {t("manage-vault.action")}
+            <Button
+              variant="secondary"
+              sx={{ width: "100%" }}
+            >
+              <Text>
+                <Trans i18nKey="manageLoan" />
+              </Text>
+            </Button>
           </Link>
         </Box>
       )
@@ -124,9 +139,16 @@ const LoanOverview = ({ address }: { address: string }) => {
   const [tagFilter, setTagFilter] = useState<TagFilter>()
   const [loanData, setLoanData] = useState<any>([])
   const { t } = useTranslation()
+  const setSpinning = useSetRecoilState(pageLoading)
 
   useEffect(() => {
-    void fetchAllLoansByAddress(address).then(setLoanData)
+    setSpinning(true)
+    void fetchAllLoansByAddress(address).then(res => {
+      setLoanData(res)
+      setSpinning(false)
+    }).catch(err => {
+      setSpinning(false)
+    })
   }, [])
 
   const onSearch = (value: string) => {
@@ -288,7 +310,10 @@ const Header = () => {
         <Lead>Select an asset and loan type from list below</Lead>
       </Grid>
       <div style={{ textAlign: "right" }}>
+        <Link href={`/loans/list`}>
         <Button>Create new loan</Button>
+        </Link>
+
       </div>
     </Grid>
   )

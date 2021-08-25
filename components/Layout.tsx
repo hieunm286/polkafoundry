@@ -6,32 +6,14 @@ import AppHeader from "./Header"
 import {amountFromRad, amountFromRay, GetFromLocalStorage, rem, utf8ToBytes32} from "../helpers/common-function"
 import { useRecoilState, useSetRecoilState } from "recoil"
 import {
+  appContext,
   connectionAccountState,
   CREATE_LOAN_STAGE,
   createLoanStage,
   proxyAccountAddress,
 } from "../recoil/atoms"
 import {changeChain, getProxyAddress, initialContract} from "../helpers/web3"
-import { GET_CDPS, CDP_MANAGER, MCD_CAT, PIP_ETH, MCD_VAT, MCD_SPOT, MCD_JUG } from "../blockchain/addresses/kovan.json"
-import getCdpsAbi from "../blockchain/abi/get-cdps.json"
-import cdpManagerAbi from "../blockchain/abi/dss-cdp-manager.json"
-import mcdJugAbi from "../blockchain/abi/mcd-jug.json"
-import vatAbi from "../blockchain/abi/vat.json"
-import spotAbi from "../blockchain/abi/mcd-spot.json"
-import mcdCatAbi from "../blockchain/abi/mcd-cat.json"
-import osmAbi from "../blockchain/abi/mcd-osm.json"
-
-import Web3 from "web3";
-import {amountFromWei} from "@oasisdex/utils";
-import {BigNumber} from "bignumber.js";
-import {vatIlks$} from "../helpers/ilks/vat";
-import {spotIlks$} from "../helpers/ilks/spot";
-import {jugIlks$} from "../helpers/ilks/jug";
-import {catIlks$} from "../helpers/ilks/cat";
-import {createIlkData$} from "../helpers/ilks";
-import {mcdData} from "../constants/variables";
-import {createOraclePriceData$} from "../helpers/pip/oracle";
-import {pipPeek$} from "../helpers/pip/pip";
+import {MULTICHAIN_SETUP} from "../constants/variables";
 
 interface LayoutProps {
   children: JSX.Element
@@ -57,6 +39,7 @@ const Layout: React.FC<LayoutProps> = ({ noLayout = false, children }) => {
   const [address, setAddress] = useRecoilState(connectionAccountState)
   const setProxyAddress = useSetRecoilState(proxyAccountAddress)
   const setStage = useSetRecoilState(createLoanStage)
+  const setAppContext = useSetRecoilState(appContext)
 
   useEffect(() => {
     const metaMask = async () => {
@@ -88,6 +71,7 @@ const Layout: React.FC<LayoutProps> = ({ noLayout = false, children }) => {
     }
 
     void metaMask()
+    setAppContext(MULTICHAIN_SETUP.kovan)
   }, [])
 
   useEffect(() => {
