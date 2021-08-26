@@ -251,7 +251,6 @@ const CollateralEditing: React.FC<LoanDetailEditProps> = ({ onClickNext, loanInf
   const onChangeShowAdvanceDeposit = async (): Promise<void> => {
     try {
       if (!showAdvanceDeposit) {
-        const balance = await getETHBalance(address)
         setAdvanceToken({
           balance: caculatorMaxpUSD(
             depositValue,
@@ -269,7 +268,6 @@ const CollateralEditing: React.FC<LoanDetailEditProps> = ({ onClickNext, loanInf
   const onChangeShowAdvanceWithdraw = async (): Promise<void> => {
     try {
       if (!showAdvanceWithdraw) {
-        const balance = await getETHBalance(address)
         setAdvanceToken({
           balance: loanInfo?.detailData?.debt ? formatFiatBalance(loanInfo?.detailData?.debt) : "0",
           token: "pUSD",
@@ -288,7 +286,6 @@ const CollateralEditing: React.FC<LoanDetailEditProps> = ({ onClickNext, loanInf
     if (!address || !userProxy || !loanInfo) return
     const web3 = new Web3(Web3.givenProvider)
     const contract = new web3.eth.Contract(dsProxyAbi as any, userProxy)
-    const ethContract = new web3.eth.Contract(erc20 as any, ETH)
 
     const context: OpenCallData = {
       dssProxyActions: dsProxyActionsAbi,
@@ -605,7 +602,7 @@ const CollateralEditing: React.FC<LoanDetailEditProps> = ({ onClickNext, loanInf
             maxValue={loanInfo?.detailData?.freeCollateral ?? "0"}
             token={loanInfo?.token}
             action={`Withdraw`}
-            disabled={parseFloat(depositValue) > 0}
+            disabled={parseFloat(depositValue) > 0 || !checkLoanOwner(userProxy, loanInfo?.detailData?.owner)}
           />
           {(checkLoanOwner(userProxy, loanInfo?.detailData?.owner) && parseFloat(withdrawValue)) >
             0 && (

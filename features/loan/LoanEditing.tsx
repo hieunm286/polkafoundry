@@ -52,9 +52,12 @@ import Link from "next/link"
 import LoanInformation from "../../components/LoanInformation"
 import { caculateCollRatio } from "../../components/TemplateCreate"
 import { getLastCdp } from "../../helpers/loan"
+import {useTranslation} from "next-i18next";
 
 const ERRORS_LIST = {
   greaterThanBalance: "You cannot deposit more collateral than the amount in your wallet",
+  greaterThanBorrowPUSD: "You are borrowing too much. Please borrow less PUSD",
+  minimumBorrow: "minimumBorrow"
 }
 
 function convertStringToUTF8ByteArray(str: string) {
@@ -72,6 +75,7 @@ const LoanEditing = ({
   review,
   currentPrice,
   liquidationPrice,
+  debtFloor
 }: {
   ilk: string
   onChangeAmount: (amount: string, kind: "borrow" | "deposit") => void
@@ -79,6 +83,7 @@ const LoanEditing = ({
   review: { label: string; value: string }[]
   currentPrice?: BigNumber
   liquidationPrice?: BigNumber
+  debtFloor?: BigNumber
 }) => {
   const address = useRecoilValue(connectionAccountState)
   const [depositValue, setDepositValue] = useRecoilState(inputValueCreateLoanDeposite)
@@ -93,6 +98,7 @@ const LoanEditing = ({
   const [tx, setTx] = useState(undefined)
   const [trigger, setTrigger] = useRecoilState(triggerUpdate)
   const [lastLoan, setLastLoan] = useState<string | undefined>(undefined)
+  const { t } = useTranslation()
 
   useEffect(() => {
     const getWalletBalance = async (): Promise<void> => {
@@ -137,45 +143,67 @@ const LoanEditing = ({
     }
   }, [tx, userProxy])
 
+  useEffect(() => {
+    checkValidInput()
+  }, [depositValue, borrowValue])
+
   const onClickSetupProxy = () => {
     setCreateStage(CREATE_LOAN_STAGE.createProxy)
   }
 
-  const checkIsGreaterThanBalance = useCallback((input: string, balance: string) => {
-    if (parseFloat(input) > parseFloat(balance)) {
-      const newErrors = [...errors]
-      if (!newErrors.includes(ERRORS_LIST.greaterThanBalance)) {
-        newErrors.push(ERRORS_LIST.greaterThanBalance)
-      }
-      setErrors(newErrors)
+  const checkValidInput = useCallback(() => {
+    const maxBorrow = maxDebt && depositValue
+      ? formatInputNumber(
+        parseFloat(depositValue) * parseFloat(formatInputNumber(maxDebt.toString())),
+        2,
+      )
+      : "0"
+    const cInput = parseFloat(depositValue)
+    const cCurrent = parseFloat(balance)
+
+    const setError = new Set(errors)
+
+    if (cInput > cCurrent) {
+      console.log('aaaaaa')
+      setError.add(ERRORS_LIST.greaterThanBalance)
     } else {
-      const newErrors = errors.filter((error) => error !== ERRORS_LIST.greaterThanBalance)
-      setErrors(newErrors)
+      console.log('bbbbbb')
+      setError.delete(ERRORS_LIST.greaterThanBalance)
     }
-  }, [])
+
+    if (parseFloat(borrowValue) > parseFloat(maxBorrow)) {
+      setError.add(ERRORS_LIST.greaterThanBorrowPUSD)
+    } else {
+      setError.delete(ERRORS_LIST.greaterThanBorrowPUSD)
+    }
+
+    if (parseFloat(borrowValue) < parseFloat(debtFloor ? debtFloor.toString() : '0')) {
+      setError.add(ERRORS_LIST.minimumBorrow)
+    } else {
+      setError.delete(ERRORS_LIST.minimumBorrow)
+    }
+
+    const newError = Array.from(setError)
+    setErrors(newError)
+
+  }, [depositValue, borrowValue, debtFloor, balance, maxDebt])
 
   const onChangeDeposit = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = formatInputNumber(e.target.value)
-    console.log(value)
-    checkIsGreaterThanBalance(value, balance)
     setDepositValue(value)
     onChangeAmount(value, "deposit")
   }
 
   const onChangeBorrow = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = formatInputNumber(e.target.value)
-    // checkIsGreaterThanBalance(value, balance)
     setBorrowValue(value)
     onChangeAmount(value, "borrow")
   }
-
-  console.log(depositValue)
 
   const handleConfirmOpenLoan = async () => {
     if (!address || !userProxy) return
     const web3 = new Web3(Web3.givenProvider)
     const contract = new web3.eth.Contract(dsProxyAbi as any, userProxy)
-    const ethContract = new web3.eth.Contract(erc20 as any, ETH)
 
     const context: OpenCallData = {
       dssProxyActions: dsProxyActionsAbi,
@@ -321,7 +349,7 @@ const LoanEditing = ({
                       •
                     </CommonPTag>
                     <CommonPTag fSize={12} weight={400} fColor={fire}>
-                      {err}
+                      {t(err, { debtFloor: debtFloor || '' })}
                     </CommonPTag>
                   </Grid>
                 ))
@@ -333,7 +361,11 @@ const LoanEditing = ({
               <CommonSpanTag>Setup Proxy</CommonSpanTag>
             </Button>
           ) : (
-            <Button onClick={() => setStep(CREATE_LOAN_STAGE.confirmation)}>
+            <Button onClick={() => setStep(CREATE_LOAN_STAGE.confirmation)} disabled={
+              errors.length > 0 ||
+              ((!depositValue || parseFloat(depositValue) <= 0) &&
+                (!borrowValue || parseFloat(borrowValue) <= 0))
+            }>
               <CommonSpanTag>Creat Loan</CommonSpanTag>
             </Button>
           )}

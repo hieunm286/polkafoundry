@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react"
 import { Box, Flex, Grid, Text } from "theme-ui"
 import TemplateListing from "../../components/TemplateListing"
-import { TagFilter } from "../../helpers/model"
+import {TagFilter, Vault, VaultSummary} from "../../helpers/model"
 import { test } from "../../constants/variables"
 import { Trans, useTranslation } from "next-i18next"
 import Link from "next/link"
@@ -25,6 +25,7 @@ import { getToken } from "../../blockchain/tokensMetadata"
 import { Icon } from "@makerdao/dai-ui-icons"
 import { filterByTag } from "../../helpers/ilks"
 import { useSetRecoilState } from "recoil"
+import {getLoansSummary} from "./LoanSummary";
 
 const vaultsColumns: ColumnDef<any, any>[] = [
   {
@@ -129,6 +130,7 @@ const LoanOverview = ({ address }: { address: string }) => {
   const [searchText, setSearchtext] = useState<string>("")
   const [tagFilter, setTagFilter] = useState<TagFilter>()
   const [loanData, setLoanData] = useState<any>([])
+  const [loanSummary, setLoanSummary] = useState<VaultSummary | undefined>()
   const { t } = useTranslation()
   const setSpinning = useSetRecoilState(pageLoading)
 
@@ -138,8 +140,11 @@ const LoanOverview = ({ address }: { address: string }) => {
       .then((res) => {
         setLoanData(res)
         setSpinning(false)
+        const loanSM: VaultSummary = getLoansSummary(res as Vault[])
+        setLoanSummary(loanSM)
       })
       .catch((err) => {
+        console.log(err)
         setSpinning(false)
       })
   }, [])
@@ -247,14 +252,14 @@ const LoanOverview = ({ address }: { address: string }) => {
       <CardContainer>
         <CreateCard>
           <CommonPTag fSize={20} weight={700}>
-            $1200.05
+            ${loanSummary ? formatCryptoBalance(loanSummary.totalCollateralPrice) : '0'}
           </CommonPTag>
           <CommonPTag fSize={14} weight={400}>
             Total Collateral Locked
           </CommonPTag>
           <Space top={25} />
           <CommonPTag fSize={20} weight={700}>
-            400 pUSD
+            {loanSummary ? formatCryptoBalance(loanSummary.totalDaiDebt) : '0'} pUSD
           </CommonPTag>
           <CommonPTag fSize={14} weight={400}>
             Total Debt
@@ -265,7 +270,7 @@ const LoanOverview = ({ address }: { address: string }) => {
               No. of Loans
             </CommonPTag>
             <CommonPTag fSize={14} weight={700} tAlign={"right"}>
-              4
+              {loanSummary ? loanSummary.numberOfVaults.toString() : '0'}
             </CommonPTag>
           </Grid>
           <Grid columns={["2fr 1fr"]}>
@@ -273,7 +278,7 @@ const LoanOverview = ({ address }: { address: string }) => {
               Loans at risk
             </CommonPTag>
             <CommonPTag fSize={14} weight={700} tAlign={"right"}>
-              0
+              {loanSummary ? loanSummary.vaultsAtRisk.toString() : '0'}
             </CommonPTag>
           </Grid>
           <ChartContainer>
