@@ -9,7 +9,7 @@ import {
   formatBigNumber,
   formatCryptoBalance,
   formatFiatBalance,
-  formatInputNumber,
+  formatInputNumber, multi,
   notifySuccess,
   rem,
   sub,
@@ -284,8 +284,10 @@ const LoanEditing = ({
             onChange={onChangeDeposit}
             walletLabel={"In Wallet"}
             maxValue={balance}
+            showMax={false}
             token={token}
             action={`Deposit`}
+            exchangeUSDT={multi(depositValue, currentPrice ? currentPrice.toString() : '0')}
           />
           <Divider>
             <CommonPTag fColor={orange}>----------------------</CommonPTag>
@@ -304,6 +306,8 @@ const LoanEditing = ({
                   )
                 : "0"
             }
+            showMax={false}
+            showExchangeUSDT={false}
             token={`pUSD`}
             action={`Borrow`}
           />
