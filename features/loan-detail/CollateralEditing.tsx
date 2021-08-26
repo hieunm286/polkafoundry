@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useMemo, useState} from "react"
+import React, { useCallback, useEffect, useMemo, useState } from "react"
 import { Grid, Spinner } from "theme-ui"
 import CustomLoanInput from "../../components/CustomLoanInput"
 import { CommonPTag, CommonSpanTag, DEFAULT_DEVICE, DivTextCenter } from "../../constants/styles"
@@ -16,17 +16,21 @@ import {
   checkLoanOwner,
   formatFiatBalance,
   formatInputNumber,
-  rem, sub, sum,
+  rem,
+  sub,
+  sum,
 } from "../../helpers/common-function"
 import styled from "styled-components"
 import {
   checkApprove,
   getDepositAndGenerateCallData,
   getETHBalance,
-  getTotalBalance, getWithdrawAndPaybackCallData,
+  getTotalBalance,
+  getWithdrawAndPaybackCallData,
   initialContract,
   LockAmount,
-  OpenCallData, WithdrawAndPaybackData,
+  OpenCallData,
+  WithdrawAndPaybackData,
 } from "../../helpers/web3"
 import ConfirmationLoanChange from "./ConfirmationLoanChange"
 import Web3 from "web3"
@@ -44,8 +48,8 @@ import {
 import dsProxyActionsAbi from "../../blockchain/abi/dss-proxy-actions.json"
 import { BigNumber } from "bignumber.js"
 import { MaxUint } from "../../constants/variables"
-import {caculateCollRatio} from "../../components/TemplateCreate";
-import {caculateLiquidationPrice} from "../loan/CreateNewLoan";
+import { caculateCollRatio } from "../../components/TemplateCreate"
+import { caculateLiquidationPrice } from "../loan/CreateNewLoan"
 
 interface LoanDetailEditProps {
   onClickNext: () => void
@@ -54,10 +58,11 @@ interface LoanDetailEditProps {
 
 export const ERRORS_LIST = {
   greaterThanBalance: "You cannot deposit more collateral than the amount in your wallet",
-  pUSDMustBe0OrGt100: "The Loan outstanding debt must be 0 or exceed 100.00 amount of pUSD. Please change your payback amount",
+  pUSDMustBe0OrGt100:
+    "The Loan outstanding debt must be 0 or exceed 100.00 amount of pUSD. Please change your payback amount",
   greaterThanMaxPUSD: "You cannot payback more than current pUSD",
   greaterThanAvailableWithdraw: "You cannot withdraw more than you have",
-  greaterThanBorrowPUSD: "You are borrowing too much. Please borrow less PUSD"
+  greaterThanBorrowPUSD: "You are borrowing too much. Please borrow less PUSD",
 }
 
 const CollateralEditing: React.FC<LoanDetailEditProps> = ({ onClickNext, loanInfo }) => {
@@ -125,7 +130,7 @@ const CollateralEditing: React.FC<LoanDetailEditProps> = ({ onClickNext, loanInf
   }, [depositValue, withdrawValue])
 
   useEffect(() => {
-      checkBorrowValid(advanceDeposit || '0', advanceToken.balance)
+    checkBorrowValid(advanceDeposit || "0", advanceToken.balance)
   }, [advanceDeposit, advanceToken.balance])
 
   const onChangeDeposit = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -152,7 +157,7 @@ const CollateralEditing: React.FC<LoanDetailEditProps> = ({ onClickNext, loanInf
   }
 
   const onChangeWithdraw = (e: React.ChangeEvent<HTMLInputElement>) => {
-    checkWithdrawValid(e.target.value, loanInfo?.detailData?.freeCollateral ?? '0')
+    checkWithdrawValid(e.target.value, loanInfo?.detailData?.freeCollateral ?? "0")
     const value = formatInputNumber(e.target.value)
 
     setWithdrawValue(value)
@@ -161,65 +166,77 @@ const CollateralEditing: React.FC<LoanDetailEditProps> = ({ onClickNext, loanInf
     }
   }
 
-  const checkIsGreaterThanBalance = useCallback((input: string, balance: string) => {
-    const cInput = parseFloat(input)
-    const cCurrent = parseFloat(balance)
-    const setError = new Set(errors)
-    if (cInput > cCurrent) {
-      setError.add(ERRORS_LIST.greaterThanBalance)
-    } else {
-      setError.delete(ERRORS_LIST.greaterThanBalance)
-    }
+  const checkIsGreaterThanBalance = useCallback(
+    (input: string, balance: string) => {
+      const cInput = parseFloat(input)
+      const cCurrent = parseFloat(balance)
+      const setError = new Set(errors)
+      if (cInput > cCurrent) {
+        setError.add(ERRORS_LIST.greaterThanBalance)
+      } else {
+        setError.delete(ERRORS_LIST.greaterThanBalance)
+      }
 
-    const newError = Array.from(setError)
-    setErrors(newError)
-  }, [balance])
+      const newError = Array.from(setError)
+      setErrors(newError)
+    },
+    [balance],
+  )
 
-  const checkDebtValid = useCallback((input: string, current: string) => {
-    const cInput = parseFloat(input)
-    const cCurrent = parseFloat(current)
-    const setError = new Set(errors)
-    console.log(cCurrent)
-    console.log(cInput)
-    if (cInput > cCurrent) {
-      setError.add(ERRORS_LIST.greaterThanMaxPUSD)
-    } else if (cCurrent - cInput < 100 && cCurrent !== cInput) {
-      setError.add(ERRORS_LIST.pUSDMustBe0OrGt100)
-    } else {
-      setError.delete(ERRORS_LIST.greaterThanMaxPUSD)
-      setError.delete(ERRORS_LIST.pUSDMustBe0OrGt100)
-    }
+  const checkDebtValid = useCallback(
+    (input: string, current: string) => {
+      const cInput = parseFloat(input)
+      const cCurrent = parseFloat(current)
+      const setError = new Set(errors)
+      console.log(cCurrent)
+      console.log(cInput)
+      if (cInput > cCurrent) {
+        setError.add(ERRORS_LIST.greaterThanMaxPUSD)
+      } else if (cCurrent - cInput < 100 && cCurrent !== cInput) {
+        setError.add(ERRORS_LIST.pUSDMustBe0OrGt100)
+      } else {
+        setError.delete(ERRORS_LIST.greaterThanMaxPUSD)
+        setError.delete(ERRORS_LIST.pUSDMustBe0OrGt100)
+      }
 
-    const newError = Array.from(setError)
-    setErrors(newError)
-  }, [advanceToken.balance, advanceDeposit])
+      const newError = Array.from(setError)
+      setErrors(newError)
+    },
+    [advanceToken.balance, advanceDeposit],
+  )
 
-  const checkBorrowValid = useCallback((input: string, current: string) => {
-    const cInput = parseFloat(input)
-    const cCurrent = parseFloat(current)
-    const setError = new Set(errors)
-    console.log(cCurrent)
-    if (cInput > cCurrent) {
-      setError.add(ERRORS_LIST.greaterThanBorrowPUSD)
-    } else {
-      setError.delete(ERRORS_LIST.greaterThanBorrowPUSD)
-    }
-    const newError = Array.from(setError)
-    setErrors(newError)
-  }, [advanceToken.balance])
+  const checkBorrowValid = useCallback(
+    (input: string, current: string) => {
+      const cInput = parseFloat(input)
+      const cCurrent = parseFloat(current)
+      const setError = new Set(errors)
+      console.log(cCurrent)
+      if (cInput > cCurrent) {
+        setError.add(ERRORS_LIST.greaterThanBorrowPUSD)
+      } else {
+        setError.delete(ERRORS_LIST.greaterThanBorrowPUSD)
+      }
+      const newError = Array.from(setError)
+      setErrors(newError)
+    },
+    [advanceToken.balance],
+  )
 
-  const checkWithdrawValid = useCallback((input: string, current: string) => {
-    const cInput = parseFloat(input)
-    const cCurrent = parseFloat(current)
-    const setError = new Set(errors)
-    if (cInput > cCurrent) {
-      setError.add(ERRORS_LIST.greaterThanAvailableWithdraw)
-    } else {
-      setError.delete(ERRORS_LIST.greaterThanAvailableWithdraw)
-    }
-    const newError = Array.from(setError)
-    setErrors(newError)
-  }, [loanInfo?.detailData?.freeCollateral])
+  const checkWithdrawValid = useCallback(
+    (input: string, current: string) => {
+      const cInput = parseFloat(input)
+      const cCurrent = parseFloat(current)
+      const setError = new Set(errors)
+      if (cInput > cCurrent) {
+        setError.add(ERRORS_LIST.greaterThanAvailableWithdraw)
+      } else {
+        setError.delete(ERRORS_LIST.greaterThanAvailableWithdraw)
+      }
+      const newError = Array.from(setError)
+      setErrors(newError)
+    },
+    [loanInfo?.detailData?.freeCollateral],
+  )
 
   const onChangeAdvanceDeposit = (e: React.ChangeEvent<HTMLInputElement>) => {
     // checkBorrowValid(e.target.value, advanceToken.balance)
@@ -336,7 +353,8 @@ const CollateralEditing: React.FC<LoanDetailEditProps> = ({ onClickNext, loanInf
     if (!address || !userProxy || !loanInfo) return
     const web3 = new Web3(Web3.givenProvider)
     const contract = new web3.eth.Contract(dsProxyAbi as any, userProxy)
-    const shouldPaybackAll = parseInt(`${parseFloat(advanceToken.balance) - parseFloat(advanceWithdraw)}`) === 0
+    const shouldPaybackAll =
+      parseInt(`${parseFloat(advanceToken.balance) - parseFloat(advanceWithdraw)}`) === 0
 
     console.log("shouldPaybackAll", shouldPaybackAll)
 
@@ -355,7 +373,7 @@ const CollateralEditing: React.FC<LoanDetailEditProps> = ({ onClickNext, loanInf
       proxyAddress: userProxy,
       ilk: loanInfo.detailData.ilk,
       token: "ETH",
-      shouldPaybackAll: shouldPaybackAll
+      shouldPaybackAll: shouldPaybackAll,
     }
 
     try {
@@ -395,7 +413,6 @@ const CollateralEditing: React.FC<LoanDetailEditProps> = ({ onClickNext, loanInf
         })
     } catch (err) {
       console.log(err)
-
     }
   }
 
@@ -424,80 +441,113 @@ const CollateralEditing: React.FC<LoanDetailEditProps> = ({ onClickNext, loanInf
   }
 
   const handleConfirm = async () => {
-    if (type === 'deposit') {
+    if (type === "deposit") {
       await handleConfirmChangeLoan()
-    } else if (type === 'withdraw') {
+    } else if (type === "withdraw") {
       await handleWithdraw()
     }
   }
 
-  const reviewDeposit = useMemo(() => ([
-    {
-      label: "inWallet",
-      value: formatInputNumber(balance) + " " + token,
-    },
-    {
-      label: "depositToLoan",
-      value: formatInputNumber(depositValue) + " " + token,
-    },
-    {
-      label: "remainingInWallet",
-      value: sub(balance, depositValue) + " " + token,
-    },
-    {
-      label: "pUSDBeingBorrowed",
-      value: advanceDeposit ? formatInputNumber(advanceDeposit) + " " + "pUSD" : "0 pUSD",
-    },
-    {
-      label: "collaterizationRatio",
-      value: loanInfo
-        ? caculateCollRatio(
-        formatInputNumber(loanInfo.currentPrice.toString()),
-        sum(advanceDeposit || '0', loanInfo.detailData.debt.toString()),
-        formatInputNumber(parseFloat(depositValue) + parseFloat(loanInfo?.detailData?.lockedCollateral.toString())),
-        )
-        : "0%",
-    },
-    {
-      label: "liquidationPrice",
-      value: loanInfo ? caculateLiquidationPrice(sum(depositValue, loanInfo?.detailData?.lockedCollateral.toString()), sum(advanceDeposit || '0', loanInfo.detailData.debt.toString()), formatInputNumber(loanInfo?.maxDebtPerUnitCollateral?.toString()), formatInputNumber(loanInfo.currentPrice.toString())) + " " + token : loanInfo?.detailData.liquidationPrice,
-    },
-  ]), [loanInfo, depositValue, advanceDeposit, balance])
+  const reviewDeposit = useMemo(
+    () => [
+      {
+        label: "inWallet",
+        value: formatInputNumber(balance) + " " + token,
+      },
+      {
+        label: "depositToLoan",
+        value: formatInputNumber(depositValue) + " " + token,
+      },
+      {
+        label: "remainingInWallet",
+        value: sub(balance, depositValue) + " " + token,
+      },
+      {
+        label: "pUSDBeingBorrowed",
+        value: advanceDeposit ? formatInputNumber(advanceDeposit) + " " + "pUSD" : "0 pUSD",
+      },
+      {
+        label: "collaterizationRatio",
+        value: loanInfo
+          ? caculateCollRatio(
+              formatInputNumber(loanInfo.currentPrice.toString()),
+              sum(advanceDeposit || "0", loanInfo.detailData.debt.toString()),
+              formatInputNumber(
+                parseFloat(depositValue) +
+                  parseFloat(loanInfo?.detailData?.lockedCollateral.toString()),
+              ),
+            )
+          : "0%",
+      },
+      {
+        label: "liquidationPrice",
+        value: loanInfo
+          ? caculateLiquidationPrice(
+              sum(depositValue, loanInfo?.detailData?.lockedCollateral.toString()),
+              sum(advanceDeposit || "0", loanInfo.detailData.debt.toString()),
+              formatInputNumber(loanInfo?.maxDebtPerUnitCollateral?.toString()),
+              formatInputNumber(loanInfo.currentPrice.toString()),
+            ) +
+            " " +
+            token
+          : loanInfo?.detailData.liquidationPrice,
+      },
+    ],
+    [loanInfo, depositValue, advanceDeposit, balance],
+  )
 
-  const reviewWithdraw = useMemo(() => ([
-    {
-      label: "inWallet",
-      value: formatInputNumber(balance) + " " + token,
-    },
-    {
-      label: "movingOutOfLoan",
-      value: formatInputNumber(withdrawValue) + " " + token,
-    },
-    {
-      label: "remainingInWallet",
-      value: sum(balance, withdrawValue) + " " + token,
-    },
-    {
-      label: "pUSDBeingPayback",
-      value: advanceWithdraw ? formatInputNumber(advanceWithdraw) + " " + "pUSD" : "0 pUSD",
-    },
-    {
-      label: "collaterizationRatio",
-      value: loanInfo
-        ? caculateCollRatio(
-          formatInputNumber(loanInfo.currentPrice.toString()),
-          sub(loanInfo.detailData.debt.toString(), advanceWithdraw || '0'),
-          sub(formatInputNumber(loanInfo?.detailData?.lockedCollateral.toString()), withdrawValue),
-        )
-        : "0%",
-    },
-    {
-      label: "liquidationPrice",
-      value: loanInfo ? caculateLiquidationPrice(sub(withdrawValue, loanInfo?.detailData?.lockedCollateral.toString()), sub(loanInfo.detailData.debt.toString(), advanceWithdraw || '0'), formatInputNumber(loanInfo?.maxDebtPerUnitCollateral?.toString()), formatInputNumber(loanInfo.currentPrice.toString())) + " " + token : loanInfo?.detailData.liquidationPrice,
-    },
-  ]), [loanInfo, withdrawValue, advanceWithdraw, balance])
+  const reviewWithdraw = useMemo(
+    () => [
+      {
+        label: "inWallet",
+        value: formatInputNumber(balance) + " " + token,
+      },
+      {
+        label: "movingOutOfLoan",
+        value: formatInputNumber(withdrawValue) + " " + token,
+      },
+      {
+        label: "remainingInWallet",
+        value: sum(balance, withdrawValue) + " " + token,
+      },
+      {
+        label: "pUSDBeingPayback",
+        value: advanceWithdraw ? formatInputNumber(advanceWithdraw) + " " + "pUSD" : "0 pUSD",
+      },
+      {
+        label: "collaterizationRatio",
+        value: loanInfo
+          ? caculateCollRatio(
+              formatInputNumber(loanInfo.currentPrice.toString()),
+              sub(loanInfo.detailData.debt.toString(), advanceWithdraw || "0"),
+              sub(
+                formatInputNumber(loanInfo?.detailData?.lockedCollateral.toString()),
+                withdrawValue,
+              ),
+            )
+          : "0%",
+      },
+      {
+        label: "liquidationPrice",
+        value: loanInfo
+          ? caculateLiquidationPrice(
+              sub(withdrawValue, loanInfo?.detailData?.lockedCollateral.toString()),
+              sub(loanInfo.detailData.debt.toString(), advanceWithdraw || "0"),
+              formatInputNumber(loanInfo?.maxDebtPerUnitCollateral?.toString()),
+              formatInputNumber(loanInfo.currentPrice.toString()),
+            ) +
+            " " +
+            token
+          : loanInfo?.detailData.liquidationPrice,
+      },
+    ],
+    [loanInfo, withdrawValue, advanceWithdraw, balance],
+  )
 
-  const review = useMemo(() => type === "deposit" ? reviewDeposit : reviewWithdraw, [type, reviewWithdraw, reviewDeposit])
+  const review = useMemo(
+    () => (type === "deposit" ? reviewDeposit : reviewWithdraw),
+    [type, reviewWithdraw, reviewDeposit],
+  )
 
   return (
     <div>
@@ -600,7 +650,16 @@ const CollateralEditing: React.FC<LoanDetailEditProps> = ({ onClickNext, loanInf
             </ErrorContainer>
           )}
           {!(advanceWithdraw && !approve) ? (
-            <Button onClick={onClickNext} disabled={errors.length > 0 || ((!depositValue || parseFloat(depositValue) <= 0) && (!withdrawValue || parseFloat(withdrawValue) <= 0))}>Next</Button>
+            <Button
+              onClick={onClickNext}
+              disabled={
+                errors.length > 0 ||
+                ((!depositValue || parseFloat(depositValue) <= 0) &&
+                  (!withdrawValue || parseFloat(withdrawValue) <= 0))
+              }
+            >
+              Next
+            </Button>
           ) : (
             <DivTextCenter>
               <Button onClick={handleClickApprove} disabled={loading}>

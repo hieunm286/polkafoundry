@@ -1,16 +1,7 @@
-import React from 'react';
-import {BigNumber} from "bignumber.js";
-import {Grid} from "theme-ui";
+import React from "react"
+import { Grid } from "theme-ui"
 import { CommonPTag } from "../constants/styles"
-import {useTranslation} from "next-i18next";
-
-interface LoanProps {
-  ilkDebtAvailable: BigNumber;
-  liquidationRatio: BigNumber;
-  stabilityFee: BigNumber;
-  liquidationPenalty: BigNumber;
-  debtFloor: BigNumber;
-}
+import { useTranslation } from "next-i18next"
 
 interface Props {
   loanInfo: { label: string; value: string }[]
@@ -31,7 +22,7 @@ const LoanInformation: React.FC<Props> = ({ loanInfo }) => {
         </Grid>
       ))}
     </Grid>
-  );
-};
+  )
+}
 
-export default LoanInformation;
+export default LoanInformation

@@ -44,23 +44,25 @@ const PUSDFilter: React.FC<PUSDProps> = ({ loanInfo }) => {
     (): { label: string; value: string }[] => [
       {
         label: "available",
-        value: loanInfo ? `${formatCryptoBalance(loanInfo?.ilkDebtAvailable)} pUSD` : '0 pUSD',
+        value: loanInfo ? `${formatCryptoBalance(loanInfo?.ilkDebtAvailable)} pUSD` : "0 pUSD",
       },
       {
         label: "liquidationRatio",
-        value: loanInfo ? formatPercent(loanInfo?.liquidationRatio?.times(100)) : '0%',
+        value: loanInfo ? formatPercent(loanInfo?.liquidationRatio?.times(100)) : "0%",
       },
       {
         label: "stabilityFee",
-        value: loanInfo ? formatPercent(loanInfo?.stabilityFee?.times(100), { precision: 2 }) : '0%',
+        value: loanInfo
+          ? formatPercent(loanInfo?.stabilityFee?.times(100), { precision: 2 })
+          : "0%",
       },
       {
         label: "liquidationFee",
-        value: loanInfo ? formatPercent(loanInfo?.liquidationPenalty?.times(100)) : '0%',
+        value: loanInfo ? formatPercent(loanInfo?.liquidationPenalty?.times(100)) : "0%",
       },
       {
         label: "debtFloor",
-        value: loanInfo ? `${formatCryptoBalance(loanInfo?.debtFloor)} pUSD` : '0 pUSD',
+        value: loanInfo ? `${formatCryptoBalance(loanInfo?.debtFloor)} pUSD` : "0 pUSD",
       },
     ],
     [loanInfo],
@@ -72,17 +74,14 @@ const PUSDFilter: React.FC<PUSDProps> = ({ loanInfo }) => {
         manageStage === MANAGE_LOAN_STAGE.confirmation) && (
         <>
           <>
-            {
-              !(manageStage === MANAGE_LOAN_STAGE.confirmation) && (
-                <>
-                  <CommonPTag fSize={14} fColor={"white"} weight={400} m={"-15px 0 0"}>
-                    {t("borrowMore")}
-                  </CommonPTag>
-                  <Space top={25} />
-                </>
-
-              )
-            }
+            {!(manageStage === MANAGE_LOAN_STAGE.confirmation) && (
+              <>
+                <CommonPTag fSize={14} fColor={"white"} weight={400} m={"-15px 0 0"}>
+                  {t("borrowMore")}
+                </CommonPTag>
+                <Space top={25} />
+              </>
+            )}
             <LoanDetailEditing onClickNext={onClickNext} loanInfo={loanInfo} />
           </>
           {manageStage !== MANAGE_LOAN_STAGE.confirmation && (

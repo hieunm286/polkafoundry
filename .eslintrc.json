@@ -17,7 +17,7 @@
     "react/jsx-uses-vars": "error",
     "import/no-default-export": "off",
 
-    "func-style": ["error", "declaration"],
+    "func-style": ["error", "declaration", { "allowArrowFunctions": true }],
     "@typescript-eslint/no-use-before-define": "off",
     "@typescript-eslint/no-useless-constructor": "off",
     "accessor-pairs": "error",

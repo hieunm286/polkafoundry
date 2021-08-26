@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useMemo, useState} from "react"
+import React, { useCallback, useEffect, useMemo, useState } from "react"
 import { Grid, Spinner } from "theme-ui"
 import CustomLoanInput from "../../components/CustomLoanInput"
 import { CommonPTag, CommonSpanTag, DEFAULT_DEVICE, DivTextCenter } from "../../constants/styles"
@@ -17,7 +17,9 @@ import {
   formatFiatBalance,
   formatInputNumber,
   notifySuccess,
-  rem, sub, sum,
+  rem,
+  sub,
+  sum,
 } from "../../helpers/common-function"
 import styled from "styled-components"
 import {
@@ -51,8 +53,8 @@ import { BigNumber } from "bignumber.js"
 import ConfirmationLoanChange from "./ConfirmationLoanChange"
 import { ERRORS_LIST } from "./CollateralEditing"
 import { MaxUint } from "../../constants/variables"
-import {caculateCollRatio} from "../../components/TemplateCreate";
-import {caculateLiquidationPrice} from "../loan/CreateNewLoan";
+import { caculateCollRatio } from "../../components/TemplateCreate"
+import { caculateLiquidationPrice } from "../loan/CreateNewLoan"
 
 interface LoanDetailEditProps {
   onClickNext: () => void
@@ -452,73 +454,106 @@ const LoanDetailEditing: React.FC<LoanDetailEditProps> = ({ onClickNext, loanInf
     }
   }
 
-  const reviewBorrow = useMemo(() => ([
-    {
-      label: "inWallet",
-      value: formatInputNumber(balance) + " " + token,
-    },
-    {
-      label: "depositToLoan",
-      value: formatInputNumber(depositValue || '0') + " " + token,
-    },
-    {
-      label: "remainingInWallet",
-      value: sub(balance, depositValue || '0') + " " + token,
-    },
-    {
-      label: "pUSDBeingBorrowed",
-      value: advanceDeposit ? formatInputNumber(advanceDeposit) + " " + "pUSD" : "0 pUSD",
-    },
-    {
-      label: "collaterizationRatio",
-      value: loanInfo
-        ? caculateCollRatio(
-          formatInputNumber(loanInfo.currentPrice.toString()),
-          sum(advanceDeposit || '0', loanInfo.detailData.debt.toString()),
-          formatInputNumber(parseFloat(depositValue || '0') + parseFloat(loanInfo?.detailData?.lockedCollateral.toString())),
-        )
-        : "0%",
-    },
-    {
-      label: "liquidationPrice",
-      value: loanInfo ? caculateLiquidationPrice(sum(depositValue || '0', loanInfo?.detailData?.lockedCollateral.toString()), sum(advanceDeposit || '0', loanInfo.detailData.debt.toString()), formatInputNumber(loanInfo?.maxDebtPerUnitCollateral?.toString()), formatInputNumber(loanInfo.currentPrice.toString())) + " " + token : loanInfo?.detailData.liquidationPrice,
-    },
-  ]), [loanInfo, depositValue, advanceDeposit, balance])
+  const reviewBorrow = useMemo(
+    () => [
+      {
+        label: "inWallet",
+        value: formatInputNumber(balance) + " " + token,
+      },
+      {
+        label: "depositToLoan",
+        value: formatInputNumber(depositValue || "0") + " " + token,
+      },
+      {
+        label: "remainingInWallet",
+        value: sub(balance, depositValue || "0") + " " + token,
+      },
+      {
+        label: "pUSDBeingBorrowed",
+        value: advanceDeposit ? formatInputNumber(advanceDeposit) + " " + "pUSD" : "0 pUSD",
+      },
+      {
+        label: "collaterizationRatio",
+        value: loanInfo
+          ? caculateCollRatio(
+              formatInputNumber(loanInfo.currentPrice.toString()),
+              sum(advanceDeposit || "0", loanInfo.detailData.debt.toString()),
+              formatInputNumber(
+                parseFloat(depositValue || "0") +
+                  parseFloat(loanInfo?.detailData?.lockedCollateral.toString()),
+              ),
+            )
+          : "0%",
+      },
+      {
+        label: "liquidationPrice",
+        value: loanInfo
+          ? caculateLiquidationPrice(
+              sum(depositValue || "0", loanInfo?.detailData?.lockedCollateral.toString()),
+              sum(advanceDeposit || "0", loanInfo.detailData.debt.toString()),
+              formatInputNumber(loanInfo?.maxDebtPerUnitCollateral?.toString()),
+              formatInputNumber(loanInfo.currentPrice.toString()),
+            ) +
+            " " +
+            token
+          : loanInfo?.detailData.liquidationPrice,
+      },
+    ],
+    [loanInfo, depositValue, advanceDeposit, balance],
+  )
 
-  const reviewPayback = useMemo(() => ([
-    {
-      label: "inWallet",
-      value: formatInputNumber(balance) + " " + token,
-    },
-    {
-      label: "movingOutOfLoan",
-      value: formatInputNumber(withdrawValue || '0') + " " + token,
-    },
-    {
-      label: "remainingInWallet",
-      value: sum(balance, withdrawValue || '0') + " " + token,
-    },
-    {
-      label: "pUSDBeingPayback",
-      value: advanceWithdraw ? formatInputNumber(advanceWithdraw) + " " + "pUSD" : "0 pUSD",
-    },
-    {
-      label: "collaterizationRatio",
-      value: loanInfo
-        ? caculateCollRatio(
-          formatInputNumber(loanInfo.currentPrice.toString()),
-          sub(loanInfo.detailData.debt.toString(), advanceWithdraw || '0'),
-          sub(formatInputNumber(loanInfo?.detailData?.lockedCollateral.toString()), withdrawValue || '0'),
-        )
-        : "0%",
-    },
-    {
-      label: "liquidationPrice",
-      value: loanInfo ? caculateLiquidationPrice(sub(withdrawValue || 0, loanInfo?.detailData?.lockedCollateral.toString()), sub(loanInfo.detailData.debt.toString(), advanceWithdraw || '0'), formatInputNumber(loanInfo?.maxDebtPerUnitCollateral?.toString()), formatInputNumber(loanInfo.currentPrice.toString())) + " " + token : loanInfo?.detailData.liquidationPrice,
-    },
-  ]), [loanInfo, withdrawValue, advanceWithdraw, balance])
+  const reviewPayback = useMemo(
+    () => [
+      {
+        label: "inWallet",
+        value: formatInputNumber(balance) + " " + token,
+      },
+      {
+        label: "movingOutOfLoan",
+        value: formatInputNumber(withdrawValue || "0") + " " + token,
+      },
+      {
+        label: "remainingInWallet",
+        value: sum(balance, withdrawValue || "0") + " " + token,
+      },
+      {
+        label: "pUSDBeingPayback",
+        value: advanceWithdraw ? formatInputNumber(advanceWithdraw) + " " + "pUSD" : "0 pUSD",
+      },
+      {
+        label: "collaterizationRatio",
+        value: loanInfo
+          ? caculateCollRatio(
+              formatInputNumber(loanInfo.currentPrice.toString()),
+              sub(loanInfo.detailData.debt.toString(), advanceWithdraw || "0"),
+              sub(
+                formatInputNumber(loanInfo?.detailData?.lockedCollateral.toString()),
+                withdrawValue || "0",
+              ),
+            )
+          : "0%",
+      },
+      {
+        label: "liquidationPrice",
+        value: loanInfo
+          ? caculateLiquidationPrice(
+              sub(withdrawValue || '0', loanInfo?.detailData?.lockedCollateral.toString()),
+              sub(loanInfo.detailData.debt.toString(), advanceWithdraw || "0"),
+              formatInputNumber(loanInfo?.maxDebtPerUnitCollateral?.toString()),
+              formatInputNumber(loanInfo.currentPrice.toString()),
+            ) +
+            " " +
+            token
+          : loanInfo?.detailData.liquidationPrice,
+      },
+    ],
+    [loanInfo, withdrawValue, advanceWithdraw, balance],
+  )
 
-  const review = useMemo(() => type === "deposit" ? reviewBorrow : reviewPayback, [type, reviewBorrow, reviewPayback])
+  const review = useMemo(
+    () => (type === "deposit" ? reviewBorrow : reviewPayback),
+    [type, reviewBorrow, reviewPayback],
+  )
 
   return (
     <div>
