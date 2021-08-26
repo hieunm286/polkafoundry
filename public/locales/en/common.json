@@ -91,5 +91,6 @@
   "inWallet": "In wallet",
   "depositToLoan": "Deposit to Loan",
   "remainingInWallet": "Remaining in Wallet",
-  "pUSDBeingBorrowed": "pUSD being borrowed"
+  "pUSDBeingBorrowed": "pUSD being borrowed",
+  "minimumBorrow": "This loan requires a minimum of {{ debtFloor }} pUSD to be borrow."
 }

@@ -206,6 +206,7 @@ const CreateNewLoan = ({ ilk }: { ilk: string }) => {
               review={review}
               currentPrice={loanInfo?.currentPrice}
               liquidationPrice={loanInfo?.liquidationPrice}
+              debtFloor={loanInfo?.debtFloor}
             />
           </>
         )}

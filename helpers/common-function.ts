@@ -277,3 +277,7 @@ export const sub = (a: string, b: string) => {
 export const sum = (a: string, b: string) => {
   return formatInputNumber(parseFloat(a) + parseFloat(b))
 }
+
+export const multi = (a: string, b: string, decimal = 2) => {
+  return formatInputNumber(parseFloat(a) * parseFloat(b), decimal)
+}

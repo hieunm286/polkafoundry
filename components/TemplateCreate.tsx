@@ -107,7 +107,7 @@ export const caculateCollRatio = (currentPrice: string, borrow: string, deposit:
   console.log((intDeposit * intCurrentPrice) / intBorrow)
   console.log(intBorrow)
 
-  return formatInputNumber(((intDeposit * intCurrentPrice) / intBorrow) * 100) + "%"
+  return formatInputNumber(((intDeposit * intCurrentPrice) / intBorrow) * 100, 2) + "%"
 }
 
 const TemplateCreate: React.FC<TemplateProp> = ({

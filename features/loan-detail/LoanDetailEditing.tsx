@@ -165,7 +165,7 @@ const LoanDetailEditing: React.FC<LoanDetailEditProps> = ({ onClickNext, loanInf
   const onChangeWithdraw = (e: React.ChangeEvent<HTMLInputElement>) => {
     console.log("abccc")
     const value = formatInputNumber(e.target.value)
-    checkWithdrawValid(value, loanInfo?.detailData?.freeCollateral ?? "0")
+    checkWithdrawValid(value, (loanInfo && advanceWithdraw) ? sum(loanInfo.detailData?.freeCollateral, `${parseFloat(advanceWithdraw) / parseFloat(loanInfo.maxDebtPerUnitCollateral)}`) : "0")
     setWithdrawValue(value)
   }
 
@@ -193,10 +193,12 @@ const LoanDetailEditing: React.FC<LoanDetailEditProps> = ({ onClickNext, loanInf
       const setError = new Set(errors)
       if (cInput > cCurrent) {
         setError.add(ERRORS_LIST.greaterThanMaxPUSD)
-      } else if (cCurrent - cInput < 100 && cCurrent !== cInput) {
-        setError.add(ERRORS_LIST.pUSDMustBe0OrGt100)
       } else {
         setError.delete(ERRORS_LIST.greaterThanMaxPUSD)
+      }
+      if (cCurrent - cInput < 100 && cCurrent !== cInput) {
+        setError.add(ERRORS_LIST.pUSDMustBe0OrGt100)
+      } else {
         setError.delete(ERRORS_LIST.pUSDMustBe0OrGt100)
       }
 
@@ -259,7 +261,12 @@ const LoanDetailEditing: React.FC<LoanDetailEditProps> = ({ onClickNext, loanInf
   }
 
   const onChangeAdvanceWithdraw = (e: React.ChangeEvent<HTMLInputElement>) => {
-    checkDebtValid(e.target.value, advanceToken.withdrawBalance)
+    if (checkLoanOwner(userProxy, loanInfo?.detailData?.owner)) {
+      checkDebtValid(e.target.value, advanceToken.withdrawBalance)
+    } else {
+      checkDebtValid(e.target.value, '0')
+    }
+
     setAdvanceWithdraw(formatInputNumber(e.target.value))
     if (type !== "withdraw") {
       setType("withdraw")
@@ -555,6 +562,8 @@ const LoanDetailEditing: React.FC<LoanDetailEditProps> = ({ onClickNext, loanInf
     [type, reviewBorrow, reviewPayback],
   )
 
+  console.log(checkLoanOwner(userProxy, loanInfo?.detailData?.owner))
+
   return (
     <div>
       {manageStage === MANAGE_LOAN_STAGE.confirmation && (
@@ -576,7 +585,7 @@ const LoanDetailEditing: React.FC<LoanDetailEditProps> = ({ onClickNext, loanInf
             token={advanceToken.token}
             action={`Borrow`}
             showExchangeUSDT={false}
-            disabled={parseFloat(advanceWithdraw) > 0}
+            disabled={parseFloat(advanceWithdraw) > 0 || !checkLoanOwner(userProxy, loanInfo?.detailData?.owner)}
             showMax={false}
           />
           {checkLoanOwner(userProxy, loanInfo?.detailData?.owner) &&
@@ -617,7 +626,7 @@ const LoanDetailEditing: React.FC<LoanDetailEditProps> = ({ onClickNext, loanInf
             value={advanceWithdraw}
             onChange={(e) => onChangeAdvanceWithdraw(e)}
             walletLabel={"Max"}
-            maxValue={advanceToken.withdrawBalance}
+            maxValue={checkLoanOwner(userProxy, loanInfo?.detailData?.owner) ? advanceToken.withdrawBalance : '0'}
             token={advanceToken.token}
             action={`Payback`}
             showExchangeUSDT={false}
@@ -640,7 +649,7 @@ const LoanDetailEditing: React.FC<LoanDetailEditProps> = ({ onClickNext, loanInf
                     value={withdrawValue}
                     onChange={(e) => onChangeWithdraw(e)}
                     walletLabel={"Max"}
-                    maxValue={loanInfo?.detailData?.freeCollateral ?? "0"}
+                    maxValue={(loanInfo && advanceWithdraw) ? sum(loanInfo.detailData?.freeCollateral, `${parseFloat(advanceWithdraw) / parseFloat(loanInfo.maxDebtPerUnitCollateral)}`) : "0"}
                     token={loanInfo?.token}
                     action={``}
                     showExchangeUSDT={true}

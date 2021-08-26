@@ -14,7 +14,8 @@ interface CustomLoanInputProp {
   token: string
   showExchangeUSDT?: boolean
   disabled?: boolean
-  showMax?: boolean
+  showMax?: boolean;
+  exchangeUSDT?: string
 }
 
 const CustomLoanInput: React.FC<CustomLoanInputProp> = (props) => {
@@ -28,6 +29,7 @@ const CustomLoanInput: React.FC<CustomLoanInputProp> = (props) => {
     showExchangeUSDT = true,
     disabled = false,
     showMax = true,
+    exchangeUSDT
   } = props
 
   const mainColor = useMemo((): string => (disabled ? gray : "#FFFFFF"), [disabled])
@@ -71,7 +73,7 @@ const CustomLoanInput: React.FC<CustomLoanInputProp> = (props) => {
             />
             {showExchangeUSDT && (
               <CommonPTag fSize={12} weight={400} fColor={vanilla}>
-                ~0.00USDT
+                ~ {exchangeUSDT || '0.00'} USDT
               </CommonPTag>
             )}
           </InputBlock>
