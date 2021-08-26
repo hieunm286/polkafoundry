@@ -13,7 +13,7 @@ import {
 } from "../../helpers/common-function"
 import { CommonPTag, DEFAULT_DEVICE, Space } from "../../constants/styles"
 import styled from "styled-components"
-import {CREATE_LOAN_STAGE, pageLoading} from "../../recoil/atoms"
+import { CREATE_LOAN_STAGE, pageLoading } from "../../recoil/atoms"
 import LoanEditing from "../loan/LoanEditing"
 import CreateProxy from "../loan/CreateProxy"
 import { ColumnDef, Table, TableSortHeader } from "../../components/Table"
@@ -23,8 +23,9 @@ import { lightGreen, orange } from "../../constants/color"
 import { fetchAllLoansByAddress } from "./LoanOverviewHandle"
 import { getToken } from "../../blockchain/tokensMetadata"
 import { Icon } from "@makerdao/dai-ui-icons"
-import {filterByTag} from "../../helpers/ilks";
-import {useSetRecoilState} from "recoil";
+import { filterByTag } from "../../helpers/ilks"
+import { useSetRecoilState } from "recoil"
+import { isUndefined } from "lodash"
 
 const vaultsColumns: ColumnDef<any, any>[] = [
   {
@@ -50,25 +51,19 @@ const vaultsColumns: ColumnDef<any, any>[] = [
   },
   {
     headerLabel: "system.vault-id",
-    header: ({ label, ...filters }) => (
-      <Text variant="tableHead">{label}</Text>
-    ),
+    header: ({ label, ...filters }) => <Text variant="tableHead">{label}</Text>,
     cell: ({ id }) => <Text sx={{ textAlign: "right" }}>#{id.toString()}</Text>,
   },
   {
     headerLabel: "system.liquidation-price",
-    header: ({ label, ...filters }) => (
-      <Text variant="tableHead">{label}</Text>
-    ),
+    header: ({ label, ...filters }) => <Text variant="tableHead">{label}</Text>,
     cell: ({ liquidationPrice }) => (
       <Text sx={{ textAlign: "right" }}>${formatFiatBalance(liquidationPrice)}</Text>
     ),
   },
   {
     headerLabel: "system.coll-ratio",
-    header: ({ label, ...filters }) => (
-      <Text variant="tableHead">{label}</Text>
-    ),
+    header: ({ label, ...filters }) => <Text variant="tableHead">{label}</Text>,
     cell: (vault) => {
       return (
         <Text sx={{ textAlign: "right", color: vault.atRiskLevelDanger ? "onError" : "onSuccess" }}>
@@ -104,10 +99,7 @@ const vaultsColumns: ColumnDef<any, any>[] = [
       return (
         <Box sx={{ flexGrow: 1, textAlign: "right" }}>
           <Link as={`/${id}`} href={`/[loan]`}>
-            <Button
-              variant="secondary"
-              sx={{ width: "100%" }}
-            >
+            <Button variant="secondary" sx={{ width: "100%" }}>
               <Text>
                 <Trans i18nKey="manageLoan" />
               </Text>
@@ -143,14 +135,19 @@ const LoanOverview = ({ address }: { address: string }) => {
 
   useEffect(() => {
     setSpinning(true)
-    void fetchAllLoansByAddress(address).then(res => {
-      setLoanData(res)
-      console.log('res', res)
-      setSpinning(false)
-    }).catch(err => {
-      console.log(err)
-      setSpinning(false)
-    })
+    void fetchAllLoansByAddress(address)
+      .then((res) => {
+        if (isUndefined(res[0])) {
+          setLoanData([])
+        } else {
+          setLoanData(res)
+        }
+        setSpinning(false)
+      })
+      .catch((err) => {
+        console.log(err)
+        setSpinning(false)
+      })
   }, [])
 
   const onSearch = (value: string) => {
@@ -172,7 +169,7 @@ const LoanOverview = ({ address }: { address: string }) => {
     },
   ]
   const FILTER_TOKEN = filterByTag(loanData, tagFilter).filter((token) => {
-    return token.ilk.indexOf(searchText) !== -1
+    return token?.ilk?.indexOf(searchText) !== -1
   })
 
   const RenderChart = useCallback(() => {
@@ -220,7 +217,7 @@ const LoanOverview = ({ address }: { address: string }) => {
         paddingTop: 15,
       }}
     >
-      <Box sx={{ minHeight: '100vh' }}>
+      <Box sx={{ minHeight: "100vh" }}>
         {/*<HeaderLeft>*/}
         <Header />
         <Space top={30} />
@@ -241,10 +238,10 @@ const LoanOverview = ({ address }: { address: string }) => {
             state={{ search: "", tagFilter: "all-assets" }}
             primaryKey={"address"}
             columns={vaultsColumns}
-            noResults={<Box>{t('no-results')}</Box>}
+            noResults={<Box>{t("no-results")}</Box>}
             deriveRowProps={(row) => {
               return {
-                href: `/${row.id}`,
+                href: `/${row?.id}`,
                 // onClick: () => {
                 //   trackingEvents.overviewManage(row.id.toString(), row.ilk)
                 // },
@@ -313,7 +310,7 @@ const Header = () => {
       </Grid>
       <div style={{ textAlign: "right" }}>
         <Link href={`/loans/list`}>
-        <Button>Create new loan</Button>
+          <Button>Create new loan</Button>
         </Link>
 
       </div>

@@ -1,6 +1,5 @@
 import React from 'react';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
-import WithAuth from "../../components/Authentication";
 import Layout from "../../components/Layout";
 import LoanList from "../../features/loan/LoanList";
 

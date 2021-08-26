@@ -1,16 +1,14 @@
-import React, {useEffect, useState} from "react"
+import React, { useEffect, useState } from "react"
 import { Box, Button, Text } from "theme-ui"
 import { TagFilter } from "../../helpers/model"
-import { COIN_TAGS, test } from "../../constants/variables"
 import TemplateListing from "../../components/TemplateListing"
 import Link from "next/link"
 import { Trans, useTranslation } from "next-i18next"
-import {useRecoilValue} from "recoil";
-import {appContext} from "../../recoil/atoms";
-import App from "next/app";
-import {createIlkData$} from "../../helpers/ilks";
-import {ColumnDef} from "../../components/Table";
-import {formatCryptoBalance, formatPercent} from "../../helpers/common-function";
+import { useRecoilValue } from "recoil"
+import { appContext } from "../../recoil/atoms"
+import { createIlkData$ } from "../../helpers/ilks"
+import { ColumnDef } from "../../components/Table"
+import { formatCryptoBalance, formatPercent } from "../../helpers/common-function"
 
 const ilksColumns: ColumnDef<any, any>[] = [
   {
@@ -33,7 +31,11 @@ const ilksColumns: ColumnDef<any, any>[] = [
       <p>{label}</p>
       // </TableSortHeader>
     ),
-    cell: ({ stabilityFee }: any) => <Text sx={{ textAlign: "right" }}>{formatPercent(stabilityFee.times(100), { precision: 2 })}</Text>,
+    cell: ({ stabilityFee }: any) => (
+      <Text sx={{ textAlign: "right" }}>
+        {formatPercent(stabilityFee.times(100), { precision: 2 })}
+      </Text>
+    ),
   },
   {
     headerLabel: "system.liquidityRatio",
@@ -42,7 +44,9 @@ const ilksColumns: ColumnDef<any, any>[] = [
       <p>{label}</p>
       // </TableSortHeader>
     ),
-    cell: ({ liquidationRatio }: any) => <Text sx={{ textAlign: "right" }}>{formatPercent(liquidationRatio.times(100))}</Text>,
+    cell: ({ liquidationRatio }: any) => (
+      <Text sx={{ textAlign: "right" }}>{formatPercent(liquidationRatio.times(100))}</Text>
+    ),
   },
   {
     headerLabel: "system.liquidityPenalty",
@@ -51,7 +55,9 @@ const ilksColumns: ColumnDef<any, any>[] = [
       <p>{label}</p>
       // </TableSortHeader>
     ),
-    cell: ({ liquidationPenalty }: any) => <Text sx={{ textAlign: "right" }}>{formatPercent(liquidationPenalty.times(100))}</Text>,
+    cell: ({ liquidationPenalty }: any) => (
+      <Text sx={{ textAlign: "right" }}>{formatPercent(liquidationPenalty.times(100))}</Text>
+    ),
   },
   {
     headerLabel: "system.pUSDAvailable",
@@ -60,7 +66,9 @@ const ilksColumns: ColumnDef<any, any>[] = [
       <p>{label}</p>
       // </TableSortHeader>
     ),
-    cell: ({ ilkDebtAvailable }: any) => <Text sx={{ textAlign: "right" }}>{formatCryptoBalance(ilkDebtAvailable)}</Text>,
+    cell: ({ ilkDebtAvailable }: any) => (
+      <Text sx={{ textAlign: "right" }}>{formatCryptoBalance(ilkDebtAvailable)}</Text>
+    ),
   },
   {
     headerLabel: "kkk",
@@ -76,10 +84,7 @@ const ilksColumns: ColumnDef<any, any>[] = [
           {/*{!ilkDebtAvailable.isZero() ? (*/}
           {/*    <FormattedMessage id="open-vault.title" />*/}
           {/*) : (*/}
-          <Button
-            variant="secondary"
-            sx={{ width: "100%", maxWidth: ["100%", "150px"] }}
-          >
+          <Button variant="secondary" sx={{ width: "100%", maxWidth: ["100%", "150px"] }}>
             <Text>
               <Trans i18nKey="createLoan" />
             </Text>
@@ -98,18 +103,15 @@ const LoanList = () => {
   const [ilks, setIlks] = useState<any>([])
   const AppContext = useRecoilValue(appContext)
 
-  console.log(AppContext)
-
   useEffect(() => {
     const fetchListToken = async () => {
-      try {
-        if (!AppContext) return;
-        const ilksData = await Promise.all(Object.keys(AppContext.token).filter(ilk => ilk === "ETH-A").map(ilk => createIlkData$(ilk)))
-        setIlks(ilksData)
-      } catch (err) {
-
-      }
-
+      if (!AppContext) return
+      const ilksData = await Promise.all(
+        Object.keys(AppContext.token)
+          .filter((ilk) => ilk === "ETH-A")
+          .map((ilk) => createIlkData$(ilk)),
+      )
+      setIlks(ilksData)
     }
 
     void fetchListToken()

@@ -45,7 +45,13 @@ const CreateProxy = ({ onClickBack }: { onClickBack?: () => void }) => {
   return (
     <CreateProxyContainer>
       <Button onClick={handleCreateProxy}>Create proxy</Button>
-      <Back onClick={() => onClickBack ? onClickBack() : setCreateLoanStage(CREATE_LOAN_STAGE.editForm)}>Back to edit Loan</Back>
+      <Back
+        onClick={() =>
+          onClickBack ? onClickBack() : setCreateLoanStage(CREATE_LOAN_STAGE.editForm)
+        }
+      >
+        Back to edit Loan
+      </Back>
     </CreateProxyContainer>
   )
 }

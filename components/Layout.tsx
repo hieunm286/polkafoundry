@@ -3,7 +3,7 @@ import styled from "styled-components"
 import { serverSideTranslations } from "next-i18next/serverSideTranslations"
 import { defaultBg } from "../constants/styles"
 import AppHeader from "./Header"
-import {amountFromRad, amountFromRay, GetFromLocalStorage, rem, utf8ToBytes32} from "../helpers/common-function"
+import { GetFromLocalStorage, rem } from "../helpers/common-function"
 import { useRecoilState, useSetRecoilState } from "recoil"
 import {
   appContext,
@@ -12,8 +12,8 @@ import {
   createLoanStage,
   proxyAccountAddress,
 } from "../recoil/atoms"
-import {changeChain, getProxyAddress, initialContract} from "../helpers/web3"
-import {MULTICHAIN_SETUP} from "../constants/variables";
+import { changeChain, getProxyAddress } from "../helpers/web3"
+import { MULTICHAIN_SETUP } from "../constants/variables"
 
 interface LayoutProps {
   children: JSX.Element

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react"
+import React, { useMemo } from "react"
 import styled from "styled-components"
 import {
   formatCryptoBalance,
@@ -12,12 +12,11 @@ import { fire, lightGreen, orange, silver, vanilla } from "../constants/color"
 import { FiltersWithPopular } from "../features/vaults-list/FiltersWithPopular"
 import { LoanDetail, LoanHistory, TagFilter } from "../helpers/model"
 import { loadDetailTest } from "../constants/variables"
-import { Box, Grid, Spinner, Text } from "theme-ui"
+import { Box, Grid, Text } from "theme-ui"
 import { ColumnDef, Table } from "./Table"
 import moment from "moment"
 import Link from "next/link"
 import { Trans, useTranslation } from "next-i18next"
-import {BigNumber} from "bignumber.js";
 
 interface TemplateProp {
   title: string
@@ -97,18 +96,18 @@ const loanHistoryColumn: ColumnDef<LoanHistory, any>[] = [
 ]
 
 export const caculateCollRatio = (currentPrice: string, borrow: string, deposit: string) => {
-  console.log('1111')
+  console.log("1111")
   if (!borrow || borrow === "" || !deposit || deposit === "") return "0%"
-  const intCurrentPrice = parseFloat(currentPrice) ?? 0;
-  const intBorrow = parseFloat(borrow) ?? 0;
-  const intDeposit = parseFloat(deposit) ?? 0;
+  const intCurrentPrice = parseFloat(currentPrice) || 0
+  const intBorrow = parseFloat(borrow) || 0
+  const intDeposit = parseFloat(deposit) || 0
 
-  if (intCurrentPrice === 0 || intBorrow === 0) return '0%'
+  if (intCurrentPrice === 0 || intBorrow === 0) return "0%"
 
-  console.log(intDeposit * intCurrentPrice / intBorrow)
+  console.log((intDeposit * intCurrentPrice) / intBorrow)
   console.log(intBorrow)
 
-  return formatInputNumber((intDeposit * intCurrentPrice / intBorrow) * 100) + '%'
+  return formatInputNumber(((intDeposit * intCurrentPrice) / intBorrow) * 100) + "%"
 }
 
 const TemplateCreate: React.FC<TemplateProp> = ({
@@ -134,7 +133,7 @@ const TemplateCreate: React.FC<TemplateProp> = ({
     currentPrice,
     nextPriceUpdate,
     nextPrice,
-    detailData
+    detailData,
   } = loanInfo ?? {}
 
   const loanDetail = useMemo(
@@ -146,26 +145,28 @@ const TemplateCreate: React.FC<TemplateProp> = ({
       },
       {
         label: t("loanDetail.availableToBorrow"),
-        value: detailData ? formatFiatBalance(detailData.availableDebt) :
-          deposit && maxDebtPerUnitCollateral
-            ? formatInputNumber(
-                parseFloat(deposit) *
-                  parseFloat(formatInputNumber(maxDebtPerUnitCollateral.toString())),
-                2,
-              )
-            : 0,
+        value: detailData
+          ? formatFiatBalance(detailData.availableDebt)
+          : deposit && maxDebtPerUnitCollateral
+          ? formatInputNumber(
+              parseFloat(deposit) *
+                parseFloat(formatInputNumber(maxDebtPerUnitCollateral.toString())),
+              2,
+            )
+          : 0,
         token: "pUSD",
       },
       {
         label: t("loanDetail.availableToWithDraw"),
-        value:  detailData ? formatFiatBalance(detailData.freeCollateral) :
-          deposit && borrow && maxDebtPerUnitCollateral
-            ? getAvailableToWithdraw(
-                deposit,
-                borrow,
-                formatInputNumber(maxDebtPerUnitCollateral.toString()),
-              )
-            : 0,
+        value: detailData
+          ? formatFiatBalance(detailData.freeCollateral)
+          : deposit && borrow && maxDebtPerUnitCollateral
+          ? getAvailableToWithdraw(
+              deposit,
+              borrow,
+              formatInputNumber(maxDebtPerUnitCollateral.toString()),
+            )
+          : 0,
         token: token,
       },
       {
@@ -199,7 +200,12 @@ const TemplateCreate: React.FC<TemplateProp> = ({
               {t("liquidationPrice")}
             </CommonPTag>
             <CommonPTag fSize={48} fColor={fire} weight={700}>
-              ${detailData ? formatFiatBalance(detailData.liquidationPrice) : liquidationPrice ? formatFiatBalance(liquidationPrice) : 0}
+              $
+              {detailData
+                ? formatFiatBalance(detailData.liquidationPrice)
+                : liquidationPrice
+                ? formatFiatBalance(liquidationPrice)
+                : 0}
             </CommonPTag>
             <CommonPTag fSize={16} fColor={silver} weight={500} m={"40px 0 0"}>
               {t("currentETHPrice")}
@@ -208,7 +214,7 @@ const TemplateCreate: React.FC<TemplateProp> = ({
               ${currentPrice ? formatFiatBalance(currentPrice) : 0}
             </CommonPTag>
             <CommonPTag fSize={16} fColor={silver} weight={400} m={"7px 0 0"}>
-              {t("nextPriceIn")} {moment(nextPriceUpdate).format('MMM DD, YYYY, h:mma')}
+              {t("nextPriceIn")} {moment(nextPriceUpdate).format("MMM DD, YYYY, h:mma")}
             </CommonPTag>
             <CommonPTag fSize={14} fColor={silver} weight={400}>
               ${nextPrice ? formatFiatBalance(nextPrice) : 0}
@@ -224,18 +230,25 @@ const TemplateCreate: React.FC<TemplateProp> = ({
               {t("collaterizationRatio")}
             </CommonPTag>
             <CommonPTag fSize={48} fColor={lightGreen} weight={700}>
-              {detailData ? formatPercent(detailData.collateralizationRatio.times(100)) : collateralizationRatio ? (
-                formatPercent(collateralizationRatio.times(100))
-              ) : currentPrice ? caculateCollRatio(formatInputNumber(currentPrice.toString()), borrow, deposit) : 0}
+              {detailData
+                ? formatPercent(detailData.collateralizationRatio.times(100))
+                : collateralizationRatio
+                ? formatPercent(collateralizationRatio.times(100))
+                : currentPrice
+                ? caculateCollRatio(formatInputNumber(currentPrice.toString()), borrow, deposit)
+                : 0}
             </CommonPTag>
             <CommonPTag fSize={16} fColor={silver} weight={500} m={"40px 0 0"}>
               {t("collateralLocked")}
             </CommonPTag>
             <CommonPTag fSize={20} fColor={"white"} weight={500}>
-              {detailData ? formatCryptoBalance(detailData.lockedCollateral) : lockedCollateral && formatCryptoBalance(lockedCollateral)} {token}
+              {detailData
+                ? formatCryptoBalance(detailData.lockedCollateral)
+                : lockedCollateral && formatCryptoBalance(lockedCollateral)}{" "}
+              {token}
             </CommonPTag>
             <CommonPTag fSize={14} fColor={silver} weight={400} m={"10px 0 0 0"}>
-              $ {detailData ? formatFiatBalance(detailData.lockedCollateralUSD) : ''}
+              $ {detailData ? formatFiatBalance(detailData.lockedCollateralUSD) : ""}
             </CommonPTag>
           </div>
         </Grid>

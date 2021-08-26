@@ -56,7 +56,7 @@ const LoanDetailOverView = ({ loan }: { loan: string }) => {
         setLoanInfo(rs)
         setPageLoading(false)
       } catch (err) {
-
+        console.log('zzz', err)
       } finally {
         setPageLoading(false)
 
