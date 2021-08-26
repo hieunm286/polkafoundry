@@ -389,12 +389,12 @@ const LoanEditing = ({
               </Button>
             )}
             {tx ? (
-              <a
-                href={`https://moonbase-blockscout.testnet.moonbeam.network/tx/${tx}`}
-                target="_blank"
-                rel={`noreferrer noopener`}
-              >
-                {/*<a href={`https://kovan.etherscan.io/tx/${tx}`} target="_blank" rel={`noreferrer noopener`}>*/}
+              // <a
+              //   href={`https://moonbase-blockscout.testnet.moonbeam.network/tx/${tx}`}
+              //   target="_blank"
+              //   rel={`noreferrer noopener`}
+              // >
+                <a href={`https://kovan.etherscan.io/tx/${tx}`} target="_blank" rel={`noreferrer noopener`}>
                 <Back>View transaction</Back>
               </a>
             ) : !loading ? (

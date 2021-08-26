@@ -165,7 +165,7 @@ const LoanDetailEditing: React.FC<LoanDetailEditProps> = ({ onClickNext, loanInf
   const onChangeWithdraw = (e: React.ChangeEvent<HTMLInputElement>) => {
     console.log("abccc")
     const value = formatInputNumber(e.target.value)
-    checkWithdrawValid(value, loanInfo?.detailData?.freeCollateral ?? "0")
+    checkWithdrawValid(value, (loanInfo && advanceWithdraw) ? sum(loanInfo.detailData?.freeCollateral, `${parseFloat(advanceWithdraw) / parseFloat(loanInfo.maxDebtPerUnitCollateral)}`) : "0")
     setWithdrawValue(value)
   }
 
@@ -193,10 +193,12 @@ const LoanDetailEditing: React.FC<LoanDetailEditProps> = ({ onClickNext, loanInf
       const setError = new Set(errors)
       if (cInput > cCurrent) {
         setError.add(ERRORS_LIST.greaterThanMaxPUSD)
-      } else if (cCurrent - cInput < 100 && cCurrent !== cInput) {
-        setError.add(ERRORS_LIST.pUSDMustBe0OrGt100)
       } else {
         setError.delete(ERRORS_LIST.greaterThanMaxPUSD)
+      }
+      if (cCurrent - cInput < 100 && cCurrent !== cInput) {
+        setError.add(ERRORS_LIST.pUSDMustBe0OrGt100)
+      } else {
         setError.delete(ERRORS_LIST.pUSDMustBe0OrGt100)
       }
 
@@ -264,6 +266,7 @@ const LoanDetailEditing: React.FC<LoanDetailEditProps> = ({ onClickNext, loanInf
     } else {
       checkDebtValid(e.target.value, '0')
     }
+
     setAdvanceWithdraw(formatInputNumber(e.target.value))
     if (type !== "withdraw") {
       setType("withdraw")
@@ -646,7 +649,7 @@ const LoanDetailEditing: React.FC<LoanDetailEditProps> = ({ onClickNext, loanInf
                     value={withdrawValue}
                     onChange={(e) => onChangeWithdraw(e)}
                     walletLabel={"Max"}
-                    maxValue={loanInfo?.detailData?.freeCollateral ?? "0"}
+                    maxValue={(loanInfo && advanceWithdraw) ? sum(loanInfo.detailData?.freeCollateral, `${parseFloat(advanceWithdraw) / parseFloat(loanInfo.maxDebtPerUnitCollateral)}`) : "0"}
                     token={loanInfo?.token}
                     action={``}
                     showExchangeUSDT={true}
