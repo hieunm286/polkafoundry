@@ -388,6 +388,10 @@ const LoanDetailEditing: React.FC<LoanDetailEditProps> = ({ onClickNext, loanInf
           setTx(receipt.transactionHash)
           setLoading(false)
           setTrigger(!trigger)
+          setAdvanceWithdraw('')
+          setAdvanceDeposit('')
+          setDepositValue('')
+          setWithdrawValue('')
           notifySuccess("✅ Transaction submitted successfully")
         })
     } catch (err) {
@@ -457,6 +461,10 @@ const LoanDetailEditing: React.FC<LoanDetailEditProps> = ({ onClickNext, loanInf
           setTx(receipt.transactionHash)
           setLoading(false)
           setTrigger(!trigger)
+          setAdvanceWithdraw('')
+          setAdvanceDeposit('')
+          setDepositValue('')
+          setWithdrawValue('')
           notifySuccess("✅ Transaction submitted successfully")
         })
     } catch (err) {
