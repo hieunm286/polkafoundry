@@ -18,7 +18,7 @@ import { ethers } from "ethers"
 
 export const fetchAllLoansByAddress = async (address: string) => {
   const proxy = await getProxyAddress(address)
-  console.log(proxy)
+  console.log({ proxy })
   if (proxy === ethers.constants.AddressZero) {
     return []
   }
@@ -26,26 +26,17 @@ export const fetchAllLoansByAddress = async (address: string) => {
   const contract = initialContract(getCdpsAbi, GET_CDPS)
   const cdp = await contract.methods.getCdpsAsc(CDP_MANAGER, proxy).call()
 
-  console.log(cdp)
+  console.log({ cdp })
 
   const { ids } = cdp
-  const _ids = ids.map(
-    (id) =>
-      new BigNumber({
-        s: 1,
-        e: 3,
-        c: [parseFloat(id)],
-        _isBigNumber: true,
-      }),
-  )
 
-  const allLoans = await Promise.all(
-    _ids.map((id) =>
-      fetchLoanById(id)
-    ),
-  )
+  const allLoans = []
 
-  console.log(allLoans)
+  for (const loadID of ids) {
+    const rs = await fetchLoanById(loadID)
+
+    allLoans.push(rs)
+  }
 
   return allLoans
 }
@@ -64,8 +55,8 @@ export const fetchLoanById = async (loanId: string) => {
         console.log(ilk)
         const token = ilkToToken(ilk)
         return Promise.all([
-          vatUrns$({ilks: ilk, urnAddress: urnAddress}),
-          vatGem$({ilks: ilk, urnAddress: urnAddress}),
+          vatUrns$({ ilks: ilk, urnAddress: urnAddress }),
+          vatGem$({ ilks: ilk, urnAddress: urnAddress }),
           createOraclePriceData$(token),
           createIlkData$(ilk),
           Promise.resolve(urnAddress),
@@ -78,9 +69,9 @@ export const fetchLoanById = async (loanId: string) => {
       .then((res) => {
         console.log(res)
         const [
-          {collateral, normalizedDebt},
+          { collateral, normalizedDebt },
           unlockedCollateral,
-          {currentPrice, nextPrice},
+          { currentPrice, nextPrice },
           {
             debtScalingFactor,
             liquidationRatio,
@@ -102,9 +93,9 @@ export const fetchLoanById = async (loanId: string) => {
 
         const debtOffset = !debt.isZero()
           ? debt
-            .times(one.plus(stabilityFee.div(SECONDS_PER_YEAR)).pow(HOUR * 5))
-            .minus(debt)
-            .dp(18, BigNumber.ROUND_DOWN)
+              .times(one.plus(stabilityFee.div(SECONDS_PER_YEAR)).pow(HOUR * 5))
+              .minus(debt)
+              .dp(18, BigNumber.ROUND_DOWN)
           : new BigNumber("1e-18")
 
         const backingCollateral = debt.times(liquidationRatio).div(currentPrice)
@@ -146,8 +137,8 @@ export const fetchLoanById = async (loanId: string) => {
         const daiYieldFromLockedCollateral = availableDebt.lt(ilkDebtAvailable)
           ? availableDebt
           : ilkDebtAvailable.gt(zero)
-            ? ilkDebtAvailable
-            : zero
+          ? ilkDebtAvailable
+          : zero
         const atRiskLevelWarning =
           collateralizationRatio.gte(collateralizationDangerThreshold) &&
           collateralizationRatio.lt(collateralizationWarningThreshold)
@@ -213,6 +204,6 @@ export const fetchLoanById = async (loanId: string) => {
 
     return loanDetail
   } catch (err) {
-    console.log('fetch detail error: ', err.message)
+    console.log("fetch detail error: ", err.message)
   }
 }

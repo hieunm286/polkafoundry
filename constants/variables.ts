@@ -5,7 +5,7 @@ import mcdOsmAbi from "../blockchain/abi/mcd-osm.json"
 import { default as kovan } from "../blockchain/addresses/kovan.json"
 import { default as polkadot } from "../blockchain/addresses/polkadot.json"
 import { default as moonbeam } from "../blockchain/addresses/moonbeam.json"
-import {getCollateralJoinContracts} from "../blockchain/addresses/addressesUtils";
+import { getCollateralJoinContracts } from "../blockchain/addresses/addressesUtils"
 
 export const WAD = new BigNumber("1e18")
 export const RAY = new BigNumber("1e27")
@@ -75,36 +75,40 @@ export type CoinTag = ElementOf<typeof COIN_TAGS>
 
 export const MULTICHAIN = {
   kovan: {
-    ...kovan
+    ...kovan,
   },
   polka: {
-    ...polkadot
+    ...polkadot,
   },
   moonbeam: {
-    ...moonbeam
-  }
+    ...moonbeam,
+  },
 }
 
-export const mcdData = (network = 'moonbeam') => {
+export const mcdData = (network = "moonbeam") => {
   return {
     ETH: {
       abi: mcdOsmAbi,
-      address: MULTICHAIN[network].PIP_ETH
-    }
+      address: MULTICHAIN[network].PIP_ETH,
+    },
+    REP: {
+      abi: mcdOsmAbi,
+      address: MULTICHAIN[network].PIP_REP,
+    },
   }
 }
 
 export const MULTICHAIN_SETUP = {
   kovan: {
     token: { ...getCollateralJoinContracts(kovan) },
-    address: { ...kovan }
+    address: { ...kovan },
   },
   polka: {
     token: { ...getCollateralJoinContracts(polkadot) },
-    address: { ...polkadot }
+    address: { ...polkadot },
   },
   moonbeam: {
     token: { ...getCollateralJoinContracts(moonbeam) },
-    address: { ...moonbeam }
-  }
+    address: { ...moonbeam },
+  },
 }
