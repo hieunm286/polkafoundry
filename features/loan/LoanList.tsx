@@ -108,7 +108,7 @@ const LoanList = () => {
       if (!AppContext) return
       const ilksData = await Promise.all(
         Object.keys(AppContext.token)
-          .filter((ilk) => ilk === "ETH-A")
+          .filter((ilk) => ilk !== "ETH-B" && ilk !== "ETH-C" && ilk !== "DAI")
           .map((ilk) => createIlkData$(ilk)),
       )
       setIlks(ilksData)
