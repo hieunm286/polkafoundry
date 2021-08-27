@@ -1,14 +1,11 @@
 import React, { useMemo } from "react"
 import {
-  CREATE_LOAN_STAGE,
   MANAGE_LOAN_STAGE,
   manageLoanStage,
   proxyAccountAddress,
 } from "../../recoil/atoms"
 import { CommonPTag, Space } from "../../constants/styles"
 import LoanDetailEditing from "./LoanDetailEditing"
-import MoreInformation from "./MoreInformation"
-import ConfirmationLoanChange from "./ConfirmationLoanChange"
 import { useRecoilState, useRecoilValue } from "recoil"
 import { useTranslation } from "next-i18next"
 import { TagFilter } from "../../helpers/model"

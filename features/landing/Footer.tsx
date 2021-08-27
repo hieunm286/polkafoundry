@@ -37,12 +37,12 @@ const Footer = () => {
             <Image src={`/images/icon/polka-label.svg`} alt={``} width={82} height={30} />
           </Box>
         </Grid>
-        {FOOTER_SECTION.map(({ gap, title, link }) => (
+        {FOOTER_SECTION.map(({ title, link }) => (
           <div key={title}>
             <CommonPTag fSize={18} weight={`bold`} m={`0 0 25px 0`}>
               {t(title)}
             </CommonPTag>
-            {link.map(({ label, url }, idx) => (
+            {link.map(({ label, url }) => (
               <Box key={label} sx={{ marginTop: 12 }}>
                 <Link href={url} target={"_blank"}>
                   {t(label)}

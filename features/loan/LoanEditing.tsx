@@ -3,13 +3,11 @@ import { Grid, Spinner } from "theme-ui"
 import CustomLoanInput from "../../components/CustomLoanInput"
 import styled from "styled-components"
 import { CommonPTag, CommonSpanTag, DEFAULT_DEVICE, DivTextCenter } from "../../constants/styles"
-import { fire, orange, vanilla } from "../../constants/color"
+import { fire, orange } from "../../constants/color"
 import {
-  calculateTokenPrecisionByValue,
-  formatBigNumber,
-  formatCryptoBalance,
   formatFiatBalance,
-  formatInputNumber, multi,
+  formatInputNumber,
+  multi,
   notifySuccess,
   rem,
   sub,
@@ -19,54 +17,41 @@ import {
   connectionAccountState,
   CREATE_LOAN_STAGE,
   createLoanStage,
-  inputValueCreateLoanBorrow,
-  inputValueCreateLoanDeposite,
   proxyAccountAddress,
   triggerUpdate,
 } from "../../recoil/atoms"
 import { ethers } from "ethers"
-import {
-  Amount,
-  getETHBalance,
-  getOpenCallData,
-  getTotalBalance,
-  getTotalBalanceByTokenAddress,
-  OpenCallData,
-} from "../../helpers/web3"
+import { Amount, getETHBalance, getOpenCallData, OpenCallData } from "../../helpers/web3"
 import Web3 from "web3"
 import dsProxyAbi from "../../blockchain/abi/ds-proxy.json"
 import dsProxyActionsAbi from "../../blockchain/abi/dss-proxy-actions.json"
-import erc20 from "../../blockchain/abi/erc20.json"
 import {
   PROXY_ACTIONS,
-  ETH,
   MCD_JOIN_DAI,
   MCD_JUG,
   CDP_MANAGER,
   MCD_JOIN_ETH_A,
 } from "../../blockchain/addresses/moonbeam.json"
 import { BigNumber } from "bignumber.js"
-import { one, zero } from "../../constants/zero"
-import { MaxUint } from "../../constants/variables"
 import Link from "next/link"
 import LoanInformation from "../../components/LoanInformation"
 import { caculateCollRatio } from "../../components/TemplateCreate"
 import { getLastCdp } from "../../helpers/loan"
-import {useTranslation} from "next-i18next";
+import { useTranslation } from "next-i18next"
 
 const ERRORS_LIST = {
   greaterThanBalance: "You cannot deposit more collateral than the amount in your wallet",
   greaterThanBorrowPUSD: "You are borrowing too much. Please borrow less PUSD",
-  minimumBorrow: "minimumBorrow"
+  minimumBorrow: "minimumBorrow",
 }
 
-function convertStringToUTF8ByteArray(str: string) {
-  const binaryArray = new Uint8Array(str.length)
-  Array.prototype.forEach.call(binaryArray, function (el, idx, arr) {
-    arr[idx] = str.charCodeAt(idx)
-  })
-  return binaryArray
-}
+// function convertStringToUTF8ByteArray(str: string) {
+//   const binaryArray = new Uint8Array(str.length)
+//   Array.prototype.forEach.call(binaryArray, function (el, idx, arr) {
+//     arr[idx] = str.charCodeAt(idx)
+//   })
+//   return binaryArray
+// }
 
 const LoanEditing = ({
   ilk,
@@ -75,7 +60,7 @@ const LoanEditing = ({
   review,
   currentPrice,
   liquidationPrice,
-  debtFloor
+  debtFloor,
 }: {
   ilk: string
   onChangeAmount: (amount: string, kind: "borrow" | "deposit") => void
@@ -86,8 +71,8 @@ const LoanEditing = ({
   debtFloor?: BigNumber
 }) => {
   const address = useRecoilValue(connectionAccountState)
-  const [depositValue, setDepositValue] = useRecoilState(inputValueCreateLoanDeposite)
-  const [borrowValue, setBorrowValue] = useRecoilState(inputValueCreateLoanBorrow)
+  const [depositValue, setDepositValue] = useState("")
+  const [borrowValue, setBorrowValue] = useState("")
   const userProxy = useRecoilValue(proxyAccountAddress)
   const setCreateStage = useSetRecoilState(createLoanStage)
   const [balance, setBalance] = useState<string>("0")
@@ -152,22 +137,23 @@ const LoanEditing = ({
   }
 
   const checkValidInput = useCallback(() => {
-    const maxBorrow = maxDebt && depositValue
-      ? formatInputNumber(
-        parseFloat(depositValue) * parseFloat(formatInputNumber(maxDebt.toString())),
-        2,
-      )
-      : "0"
+    const maxBorrow =
+      maxDebt && depositValue
+        ? formatInputNumber(
+            parseFloat(depositValue) * parseFloat(formatInputNumber(maxDebt.toString())),
+            2,
+          )
+        : "0"
     const cInput = parseFloat(depositValue)
     const cCurrent = parseFloat(balance)
 
     const setError = new Set(errors)
 
     if (cInput > cCurrent) {
-      console.log('aaaaaa')
+      console.log("aaaaaa")
       setError.add(ERRORS_LIST.greaterThanBalance)
     } else {
-      console.log('bbbbbb')
+      console.log("bbbbbb")
       setError.delete(ERRORS_LIST.greaterThanBalance)
     }
 
@@ -177,7 +163,7 @@ const LoanEditing = ({
       setError.delete(ERRORS_LIST.greaterThanBorrowPUSD)
     }
 
-    if (parseFloat(borrowValue) < parseFloat(debtFloor ? debtFloor.toString() : '0')) {
+    if (parseFloat(borrowValue) < parseFloat(debtFloor ? debtFloor.toString() : "0")) {
       setError.add(ERRORS_LIST.minimumBorrow)
     } else {
       setError.delete(ERRORS_LIST.minimumBorrow)
@@ -185,7 +171,6 @@ const LoanEditing = ({
 
     const newError = Array.from(setError)
     setErrors(newError)
-
   }, [depositValue, borrowValue, debtFloor, balance, maxDebt])
 
   const onChangeDeposit = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -315,7 +300,7 @@ const LoanEditing = ({
             showMax={false}
             token={token}
             action={`Deposit`}
-            exchangeUSDT={multi(depositValue, currentPrice ? currentPrice.toString() : '0')}
+            exchangeUSDT={multi(depositValue, currentPrice ? currentPrice.toString() : "0")}
           />
           <Divider>
             <CommonPTag fColor={orange}>----------------------</CommonPTag>
@@ -349,7 +334,7 @@ const LoanEditing = ({
                       •
                     </CommonPTag>
                     <CommonPTag fSize={12} weight={400} fColor={fire}>
-                      {t(err, { debtFloor: debtFloor || '' })}
+                      {t(err, { debtFloor: debtFloor || "" })}
                     </CommonPTag>
                   </Grid>
                 ))
@@ -361,11 +346,14 @@ const LoanEditing = ({
               <CommonSpanTag>Setup Proxy</CommonSpanTag>
             </Button>
           ) : (
-            <Button onClick={() => setStep(CREATE_LOAN_STAGE.confirmation)} disabled={
-              errors.length > 0 ||
-              ((!depositValue || parseFloat(depositValue) <= 0) &&
-                (!borrowValue || parseFloat(borrowValue) <= 0))
-            }>
+            <Button
+              onClick={() => setStep(CREATE_LOAN_STAGE.confirmation)}
+              disabled={
+                errors.length > 0 ||
+                ((!depositValue || parseFloat(depositValue) <= 0) &&
+                  (!borrowValue || parseFloat(borrowValue) <= 0))
+              }
+            >
               <CommonSpanTag>Creat Loan</CommonSpanTag>
             </Button>
           )}
@@ -394,7 +382,11 @@ const LoanEditing = ({
               //   target="_blank"
               //   rel={`noreferrer noopener`}
               // >
-                <a href={`https://kovan.etherscan.io/tx/${tx}`} target="_blank" rel={`noreferrer noopener`}>
+              <a
+                href={`https://kovan.etherscan.io/tx/${tx}`}
+                target="_blank"
+                rel={`noreferrer noopener`}
+              >
                 <Back>View transaction</Back>
               </a>
             ) : !loading ? (

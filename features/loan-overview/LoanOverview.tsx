@@ -1,8 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react"
 import { Box, Flex, Grid, Text } from "theme-ui"
-import TemplateListing from "../../components/TemplateListing"
-import {TagFilter, Vault, VaultSummary} from "../../helpers/model"
-import { test } from "../../constants/variables"
+import { TagFilter, Vault, VaultSummary } from "../../helpers/model"
 import { Trans, useTranslation } from "next-i18next"
 import Link from "next/link"
 import {
@@ -13,19 +11,15 @@ import {
 } from "../../helpers/common-function"
 import { CommonPTag, DEFAULT_DEVICE, Space } from "../../constants/styles"
 import styled from "styled-components"
-import { CREATE_LOAN_STAGE, pageLoading } from "../../recoil/atoms"
-import LoanEditing from "../loan/LoanEditing"
-import CreateProxy from "../loan/CreateProxy"
+import { pageLoading } from "../../recoil/atoms"
 import { ColumnDef, Table, TableSortHeader } from "../../components/Table"
 import { FiltersWithPopular } from "../vaults-list/FiltersWithPopular"
 import { Chart } from "react-google-charts"
 import { lightGreen, orange } from "../../constants/color"
 import { fetchAllLoansByAddress } from "./LoanOverviewHandle"
-import { getToken } from "../../blockchain/tokensMetadata"
-import { Icon } from "@makerdao/dai-ui-icons"
 import { filterByTag } from "../../helpers/ilks"
 import { useSetRecoilState } from "recoil"
-import {getLoansSummary} from "./LoanSummary";
+import { getLoansSummary } from "./LoanSummary"
 import { isUndefined } from "lodash"
 
 const vaultsColumns: ColumnDef<any, any>[] = [
@@ -254,14 +248,14 @@ const LoanOverview = ({ address }: { address: string }) => {
       <CardContainer>
         <CreateCard>
           <CommonPTag fSize={20} weight={700}>
-            ${loanSummary ? formatCryptoBalance(loanSummary.totalCollateralPrice) : '0'}
+            ${loanSummary ? formatCryptoBalance(loanSummary.totalCollateralPrice) : "0"}
           </CommonPTag>
           <CommonPTag fSize={14} weight={400}>
             Total Collateral Locked
           </CommonPTag>
           <Space top={25} />
           <CommonPTag fSize={20} weight={700}>
-            {loanSummary ? formatCryptoBalance(loanSummary.totalDaiDebt) : '0'} pUSD
+            {loanSummary ? formatCryptoBalance(loanSummary.totalDaiDebt) : "0"} pUSD
           </CommonPTag>
           <CommonPTag fSize={14} weight={400}>
             Total Debt
@@ -272,7 +266,7 @@ const LoanOverview = ({ address }: { address: string }) => {
               No. of Loans
             </CommonPTag>
             <CommonPTag fSize={14} weight={700} tAlign={"right"}>
-              {loanSummary ? loanSummary.numberOfVaults.toString() : '0'}
+              {loanSummary ? loanSummary.numberOfVaults.toString() : "0"}
             </CommonPTag>
           </Grid>
           <Grid columns={["2fr 1fr"]}>
@@ -280,7 +274,7 @@ const LoanOverview = ({ address }: { address: string }) => {
               Loans at risk
             </CommonPTag>
             <CommonPTag fSize={14} weight={700} tAlign={"right"}>
-              {loanSummary ? loanSummary.vaultsAtRisk.toString() : '0'}
+              {loanSummary ? loanSummary.vaultsAtRisk.toString() : "0"}
             </CommonPTag>
           </Grid>
           <ChartContainer>
