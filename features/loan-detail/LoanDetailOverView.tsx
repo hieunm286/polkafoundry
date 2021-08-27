@@ -42,9 +42,9 @@ const LoanDetailOverView = ({ loan }: { loan: string }) => {
       try {
         setPageLoading(true)
         const detail = await fetchLoanById(loan)
-        const token = ilkToToken(detail.ilk)
+        const token = ilkToToken(detail?.ilk || "ETH-A")
         const oracleData = await createOraclePriceData$(token)
-        const ilkData = await createIlkData$(detail.ilk)
+        const ilkData = await createIlkData$(detail?.ilk || "ETH-A")
         const rs = {
           ...oracleData,
           ...ilkData,
@@ -90,7 +90,7 @@ const LoanDetailOverView = ({ loan }: { loan: string }) => {
   return (
     <CreateContainer>
       <TemplateCreate
-        title={"ETH-A Loan # " + loan}
+        title={`${loanInfo?.ilk} Loan # ` + loan}
         loanInfo={loanInfo}
         tagFilter={detailTagFilter}
         options={detailOptions}

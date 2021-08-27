@@ -7,7 +7,7 @@ import { fire, orange } from "../../constants/color"
 import {
   formatFiatBalance,
   formatInputNumber,
-  multi,
+  multi, notifyError,
   notifySuccess,
   rem,
   sub,
@@ -32,7 +32,7 @@ import {
   MCD_JUG,
   CDP_MANAGER,
   MCD_JOIN_ETH_A,
-} from "../../blockchain/addresses/kovan.json"
+} from "../../blockchain/addresses/moonbeam.json"
 import { BigNumber } from "bignumber.js"
 import Link from "next/link"
 import LoanInformation from "../../components/LoanInformation"
@@ -234,6 +234,9 @@ const LoanEditing = ({
         .on("error", function (error, receipt) {
           console.log(receipt)
           setLoading(false)
+          if (receipt) {
+            setTx(receipt.transactionHash)
+          }
         })
         .on("receipt", function (receipt) {
           console.log(receipt)
@@ -246,6 +249,7 @@ const LoanEditing = ({
           notifySuccess("✅ Transaction submitted successfully")
         })
     } catch (err) {
+      notifyError(err.message)
     } finally {
       setLoading(false)
     }

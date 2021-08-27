@@ -178,7 +178,7 @@ const CreateNewLoan = ({ ilk }: { ilk: string }) => {
   return (
     <CreateContainer>
       <TemplateCreate
-        title={"Create new ETH-1 Loan"}
+        title={`Create new ${ilk} Loan`}
         loanInfo={loanInfo}
         tagFilter={tagFilter}
         options={options}
