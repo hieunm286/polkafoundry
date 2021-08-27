@@ -1,45 +1,27 @@
 import React from "react"
 import { CreateLoanTitle } from "../loan/CreateNewLoan"
-import {Grid, Spinner} from "theme-ui"
-import {CommonPTag, CommonSpanTag, DEFAULT_DEVICE, DivTextCenter} from "../../constants/styles"
+import { Spinner } from "theme-ui"
+import { CommonPTag, CommonSpanTag, DEFAULT_DEVICE, DivTextCenter } from "../../constants/styles"
 import { rem } from "../../helpers/common-function"
 import styled from "styled-components"
 import { orange } from "../../constants/color"
-import {CREATE_LOAN_STAGE} from "../../recoil/atoms";
-import LoanInformation from "../../components/LoanInformation";
-
-const ConfirmExamData = [
-  {
-    label: "In wallet",
-    value: "1.00005 ETH",
-  },
-  {
-    label: "Remaining in Wallet",
-    value: "0.1 ETH",
-  },
-  {
-    label: "pUSD being borrowed",
-    value: "600 ETH",
-  },
-  {
-    label: "Collateral Ratio",
-    value: "250%",
-  },
-  {
-    label: "Liquidation Price",
-    value: "$1,7400.05",
-  },
-]
+import LoanInformation from "../../components/LoanInformation"
 
 interface Prop {
-  onClickBack: () => void;
-  onConfirm: () => void;
-  loading?: boolean;
-  tx?: string;
+  onClickBack: () => void
+  onConfirm: () => void
+  loading?: boolean
+  tx?: string
   review?: { label: string; value: string }[]
 }
 
-const ConfirmationLoanChange: React.FC<Prop> = ({ onClickBack, onConfirm, loading = false, tx, review }) => {
+const ConfirmationLoanChange: React.FC<Prop> = ({
+  onClickBack,
+  onConfirm,
+  loading = false,
+  tx,
+  review,
+}) => {
   return (
     <>
       <CreateLoanTitle title={`Confirm Loan Changes`} lead={`Final review of loan details.`} />
@@ -64,7 +46,11 @@ const ConfirmationLoanChange: React.FC<Prop> = ({ onClickBack, onConfirm, loadin
           //   target="_blank"
           //   rel={`noreferrer noopener`}
           // >
-            <a href={`https://kovan.etherscan.io/tx/${tx}`} target="_blank" rel={`noreferrer noopener`}>
+          <a
+            href={`https://kovan.etherscan.io/tx/${tx}`}
+            target="_blank"
+            rel={`noreferrer noopener`}
+          >
             <Button>
               <CommonSpanTag>View transaction</CommonSpanTag>
             </Button>
@@ -75,21 +61,19 @@ const ConfirmationLoanChange: React.FC<Prop> = ({ onClickBack, onConfirm, loadin
             <CommonSpanTag>Confirm</CommonSpanTag>
           </Button>
         )}
-        {
-          !loading && (
-            <CommonPTag
-              pointer
-              fSize={14}
-              weight={900}
-              fColor={orange}
-              tAlign={"center"}
-              m={"10px 0 0"}
-              onClick={onClickBack}
-            >
-              Back to Loan Setup
-            </CommonPTag>
-          )
-        }
+        {!loading && (
+          <CommonPTag
+            pointer
+            fSize={14}
+            weight={900}
+            fColor={orange}
+            tAlign={"center"}
+            m={"10px 0 0"}
+            onClick={onClickBack}
+          >
+            Back to Loan Setup
+          </CommonPTag>
+        )}
       </DivTextCenter>
     </>
   )
@@ -100,7 +84,7 @@ export default ConfirmationLoanChange
 //----------------------------------
 const Button = styled.button`
   background: ${(props) =>
-          props.disabled ? "#C8C6E5" : `linear-gradient(to bottom, #903afd -13.58%, #492cff 102.52%)`};
+    props.disabled ? "#C8C6E5" : `linear-gradient(to bottom, #903afd -13.58%, #492cff 102.52%)`};
   border-radius: 32px;
   margin: ${rem(20)} auto 0;
   border: none;

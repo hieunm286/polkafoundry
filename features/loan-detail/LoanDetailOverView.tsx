@@ -2,19 +2,16 @@ import React, { useEffect, useMemo, useState } from "react"
 import { ilkToToken, rem } from "../../helpers/common-function"
 import styled from "styled-components"
 import TemplateCreate from "../../components/TemplateCreate"
-import {MANAGE_LOAN_STAGE, manageLoanStage, pageLoading, triggerUpdate} from "../../recoil/atoms"
+import { MANAGE_LOAN_STAGE, manageLoanStage, pageLoading, triggerUpdate } from "../../recoil/atoms"
 import { FiltersWithPopular } from "../vaults-list/FiltersWithPopular"
 import { TagFilter } from "../../helpers/model"
 import { useTranslation } from "next-i18next"
-import {useRecoilState, useRecoilValue, useSetRecoilState} from "recoil"
+import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil"
 import PUSDFilter from "./PUSDFilter"
 import Collateral from "./Collateral"
 import { fetchLoanById } from "../loan-overview/LoanOverviewHandle"
 import { createOraclePriceData$ } from "../../helpers/pip/oracle"
 import { createIlkData$ } from "../../helpers/ilks"
-import PageSpinning from "../../components/PageSpinning";
-
-const getCollateral = () => {}
 
 const LoanDetailOverView = ({ loan }: { loan: string }) => {
   const { t } = useTranslation()
@@ -45,7 +42,7 @@ const LoanDetailOverView = ({ loan }: { loan: string }) => {
       try {
         setPageLoading(true)
         const detail = await fetchLoanById(loan)
-        const token = detail ? ilkToToken(detail.ilk) : 'ETH-A'
+        const token = detail ? ilkToToken(detail.ilk) : "ETH-A"
         const oracleData = await createOraclePriceData$(token)
         const ilkData = detail ? await createIlkData$(detail.ilk) : await createIlkData$("ETH-A")
         const rs = {
@@ -56,9 +53,8 @@ const LoanDetailOverView = ({ loan }: { loan: string }) => {
         setLoanInfo(rs)
         setPageLoading(false)
       } catch (err) {
-        console.log('zzz', err)
+        console.log("zzz", err)
       }
-
     }
 
     void data()

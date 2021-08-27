@@ -11,16 +11,13 @@ import {
 import { CommonPTag, Space } from "../../constants/styles"
 import LoanEditing from "./LoanEditing"
 import { useTranslation } from "next-i18next"
-import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil"
+import { useRecoilValue, useSetRecoilState } from "recoil"
 import {
   CREATE_LOAN_STAGE,
   createLoanStage,
-  inputValueCreateLoanBorrow,
-  inputValueCreateLoanDeposite,
   pageLoading,
 } from "../../recoil/atoms"
 import CreateProxy from "./CreateProxy"
-import { Grid } from "theme-ui"
 import { createOraclePriceData$ } from "../../helpers/pip/oracle"
 import { createIlkData$ } from "../../helpers/ilks"
 import { TagFilter } from "../../helpers/model"
@@ -221,7 +218,7 @@ const CreateNewLoan = ({ ilk }: { ilk: string }) => {
             <CreateProxy />
           </>
         )}
-        {createStage !== CREATE_LOAN_STAGE.confirmation && <LoanInformation loanInfo={PUSDInfo} />}
+        {(createStage !== CREATE_LOAN_STAGE.confirmation && createStage !== CREATE_LOAN_STAGE.createProxy) && <LoanInformation loanInfo={PUSDInfo} />}
       </CreateCard>
     </CreateContainer>
   )

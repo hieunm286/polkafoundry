@@ -25,7 +25,6 @@ import {
   checkApprove,
   getDepositAndGenerateCallData,
   getETHBalance,
-  getTotalBalance,
   getWithdrawAndPaybackCallData,
   initialContract,
   LockAmount,
@@ -38,7 +37,6 @@ import dsProxyAbi from "../../blockchain/abi/ds-proxy.json"
 import erc20 from "../../blockchain/abi/erc20.json"
 import {
   CDP_MANAGER,
-  ETH,
   MCD_JOIN_DAI,
   MCD_JOIN_ETH_A,
   MCD_JUG,

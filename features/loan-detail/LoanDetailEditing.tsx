@@ -23,12 +23,9 @@ import {
 } from "../../helpers/common-function"
 import styled from "styled-components"
 import {
-  Amount,
   checkApprove,
   getDepositAndGenerateCallData,
   getETHBalance,
-  getOpenCallData,
-  getTotalBalance,
   getWithdrawAndPaybackCallData,
   initialContract,
   LockAmount,
@@ -41,7 +38,6 @@ import dsProxyAbi from "../../blockchain/abi/ds-proxy.json"
 import erc20 from "../../blockchain/abi/erc20.json"
 import {
   CDP_MANAGER,
-  ETH,
   MCD_DAI,
   MCD_JOIN_DAI,
   MCD_JOIN_ETH_A,
@@ -202,10 +198,23 @@ const LoanDetailEditing: React.FC<LoanDetailEditProps> = ({ onClickNext, loanInf
         setError.delete(ERRORS_LIST.pUSDMustBe0OrGt100)
       }
 
+      console.log(withdrawValue)
+      console.log((loanInfo && input) ? sum(loanInfo.detailData?.freeCollateral, `${parseFloat(input) / parseFloat(loanInfo.maxDebtPerUnitCollateral)}`) : "0")
+      const n = (loanInfo && input) ? parseFloat(sum(loanInfo.detailData?.freeCollateral, `${parseFloat(input) / parseFloat(loanInfo.maxDebtPerUnitCollateral)}`)) : 0
+      console.log('test', parseFloat(withdrawValue) > n)
+
+      if (withdrawValue) {
+        if (parseFloat(withdrawValue) > n) {
+          setError.add(ERRORS_LIST.greaterThanAvailableWithdraw)
+        } else {
+          setError.delete(ERRORS_LIST.greaterThanAvailableWithdraw)
+        }
+      }
+
       const newError = Array.from(setError)
       setErrors(newError)
     },
-    [advanceToken.withdrawBalance, errors.length],
+    [advanceToken.withdrawBalance, errors.length, withdrawValue, loanInfo],
   )
 
   const checkBorrowValid = useCallback(
