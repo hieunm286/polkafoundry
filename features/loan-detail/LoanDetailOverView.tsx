@@ -42,9 +42,9 @@ const LoanDetailOverView = ({ loan }: { loan: string }) => {
       try {
         setPageLoading(true)
         const detail = await fetchLoanById(loan)
-        const token = detail ? ilkToToken(detail.ilk) : "ETH-A"
+        const token = ilkToToken(detail.ilk)
         const oracleData = await createOraclePriceData$(token)
-        const ilkData = detail ? await createIlkData$(detail.ilk) : await createIlkData$("ETH-A")
+        const ilkData = await createIlkData$(detail.ilk)
         const rs = {
           ...oracleData,
           ...ilkData,
