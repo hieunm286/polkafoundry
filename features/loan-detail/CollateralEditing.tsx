@@ -5,6 +5,7 @@ import { CommonPTag, CommonSpanTag, DEFAULT_DEVICE, DivTextCenter } from "../../
 import { fire, orange } from "../../constants/color"
 import { useRecoilState, useRecoilValue } from "recoil"
 import {
+  appContext,
   connectionAccountState,
   MANAGE_LOAN_STAGE,
   manageLoanStage,
@@ -15,7 +16,7 @@ import {
   caculatorMaxpUSD,
   checkLoanOwner,
   formatFiatBalance,
-  formatInputNumber,
+  formatInputNumber, multi,
   rem,
   sub,
   sum,
@@ -65,6 +66,7 @@ export const ERRORS_LIST = {
 
 const CollateralEditing: React.FC<LoanDetailEditProps> = ({ onClickNext, loanInfo }) => {
   const address = useRecoilValue(connectionAccountState)
+  const AppContext = useRecoilValue(appContext)
   const [depositValue, setDepositValue] = useState("")
   const [withdrawValue, setWithdrawValue] = useState("")
   const [showAdvanceDeposit, setShowAdvanceDeposit] = useState(false)
@@ -92,13 +94,9 @@ const CollateralEditing: React.FC<LoanDetailEditProps> = ({ onClickNext, loanInf
         if (!address) {
           return
         }
-        // const { balance, token } = await getTotalBalance(address)
-        // setBalance(balance)
-        // setToken(token)
-        // For kovan
         const balance = await getETHBalance(address)
         setBalance(balance)
-        setToken("DEV")
+        setToken(AppContext.nativeSymbol || "ETH")
       } catch (err) {
         console.log(err.message)
       }
@@ -299,7 +297,7 @@ const CollateralEditing: React.FC<LoanDetailEditProps> = ({ onClickNext, loanInf
       borrowAmount: advanceDeposit,
       proxyAddress: userProxy,
       ilk: loanInfo.detailData.ilk,
-      token: "ETH",
+      token: AppContext.nativeSymbol || "ETH",
     }
 
     try {
@@ -367,7 +365,7 @@ const CollateralEditing: React.FC<LoanDetailEditProps> = ({ onClickNext, loanInf
       paybackAmount: advanceWithdraw,
       proxyAddress: userProxy,
       ilk: loanInfo.detailData.ilk,
-      token: "ETH",
+      token: AppContext.nativeSymbol || "ETH",
       shouldPaybackAll: shouldPaybackAll,
     }
 
@@ -562,9 +560,11 @@ const CollateralEditing: React.FC<LoanDetailEditProps> = ({ onClickNext, loanInf
             onChange={(e) => onChangeDeposit(e)}
             walletLabel={"In Wallet"}
             maxValue={balance}
+            showMax={false}
             token={token}
             action={`Deposit`}
             disabled={parseFloat(withdrawValue) > 0}
+            exchangeUSDT={multi(depositValue, loanInfo ? loanInfo.currentPrice.toString() : "0")}
           />
           {(checkLoanOwner(userProxy, loanInfo?.detailData?.owner) && parseFloat(depositValue)) >
             0 && (
@@ -577,6 +577,7 @@ const CollateralEditing: React.FC<LoanDetailEditProps> = ({ onClickNext, loanInf
                   value={advanceDeposit}
                   onChange={(e) => onChangeAdvanceDeposit(e)}
                   walletLabel={"In Wallet"}
+                  showMax={false}
                   maxValue={advanceToken.balance}
                   token={advanceToken.token}
                   action={``}
@@ -598,9 +599,12 @@ const CollateralEditing: React.FC<LoanDetailEditProps> = ({ onClickNext, loanInf
             onChange={(e) => onChangeWithdraw(e)}
             walletLabel={"Max"}
             maxValue={loanInfo?.detailData?.freeCollateral ?? "0"}
+            showMax={false}
             token={loanInfo?.token}
             action={`Withdraw`}
             disabled={parseFloat(depositValue) > 0 || !checkLoanOwner(userProxy, loanInfo?.detailData?.owner)}
+            exchangeUSDT={multi(withdrawValue, loanInfo ? loanInfo.currentPrice.toString() : "0")}
+
           />
           {(checkLoanOwner(userProxy, loanInfo?.detailData?.owner) && parseFloat(withdrawValue)) >
             0 && (
@@ -618,11 +622,11 @@ const CollateralEditing: React.FC<LoanDetailEditProps> = ({ onClickNext, loanInf
                   value={advanceWithdraw}
                   onChange={(e) => onChangeAdvanceWithdraw(e)}
                   walletLabel={"In Wallet"}
+                  showMax={false}
                   maxValue={advanceToken.balance}
                   token={advanceToken.token}
                   action={``}
                   showExchangeUSDT={true}
-                  showMax={true}
                 />
               )}
             </>

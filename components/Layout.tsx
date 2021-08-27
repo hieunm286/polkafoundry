@@ -20,17 +20,17 @@ interface LayoutProps {
   noLayout: boolean
 }
 
-const LayoutContainer = styled.div`
+const LayoutContainer = styled.div<{ noLayout?: boolean }>`
   width: 100%;
   margin: 0 auto;
-  background: url("/images/background/stars1.jpeg") top left;
+  background: ${(props) => (props.noLayout ? "100%" : `url("/images/background/stars1.jpeg") top left`)};
   background-size: cover;
   background-color: ${defaultBg};
   min-height: 100vh;
   //overflow: hidden;
 `
 
-const LayoutMain = styled.div`
+const LayoutMain = styled.div<{ noLayout?: boolean }>`
   max-width: ${(props) => (props.noLayout ? "100%" : rem`1440px`)};
   margin: 0 auto;
 `
@@ -85,7 +85,7 @@ const Layout: React.FC<LayoutProps> = ({ noLayout = false, children }) => {
   }, [address])
 
   return (
-    <LayoutContainer>
+    <LayoutContainer noLayout={noLayout}>
       <AppHeader />
       <LayoutMain noLayout={noLayout}>{children}</LayoutMain>
     </LayoutContainer>

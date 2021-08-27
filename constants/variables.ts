@@ -75,26 +75,22 @@ export type CoinTag = ElementOf<typeof COIN_TAGS>
 
 export const MULTICHAIN = {
   kovan: {
-    ...kovan,
+    ...kovan
   },
   polka: {
-    ...polkadot,
+    ...polkadot
   },
   moonbeam: {
-    ...moonbeam,
-  },
+    ...moonbeam
+  }
 }
 
-export const mcdData = (network = "moonbeam") => {
+export const mcdData = (network = 'kovan') => {
   return {
     ETH: {
       abi: mcdOsmAbi,
-      address: MULTICHAIN[network].PIP_ETH,
-    },
-    REP: {
-      abi: mcdOsmAbi,
-      address: MULTICHAIN[network].PIP_REP,
-    },
+      address: MULTICHAIN[network].PIP_ETH
+    }
   }
 }
 
@@ -102,13 +98,16 @@ export const MULTICHAIN_SETUP = {
   kovan: {
     token: { ...getCollateralJoinContracts(kovan) },
     address: { ...kovan },
+    nativeSymbol: 'ETH'
   },
   polka: {
     token: { ...getCollateralJoinContracts(polkadot) },
     address: { ...polkadot },
+    nativeSymbol: 'ETH'
   },
   moonbeam: {
     token: { ...getCollateralJoinContracts(moonbeam) },
     address: { ...moonbeam },
-  },
+    nativeSymbol: 'DEV'
+  }
 }

@@ -14,6 +14,7 @@ import {
 } from "../../helpers/common-function"
 import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil"
 import {
+  appContext,
   connectionAccountState,
   CREATE_LOAN_STAGE,
   createLoanStage,
@@ -31,7 +32,7 @@ import {
   MCD_JUG,
   CDP_MANAGER,
   MCD_JOIN_ETH_A,
-} from "../../blockchain/addresses/moonbeam.json"
+} from "../../blockchain/addresses/kovan.json"
 import { BigNumber } from "bignumber.js"
 import Link from "next/link"
 import LoanInformation from "../../components/LoanInformation"
@@ -71,6 +72,7 @@ const LoanEditing = ({
   debtFloor?: BigNumber
 }) => {
   const address = useRecoilValue(connectionAccountState)
+  const AppContext = useRecoilValue(appContext)
   const [depositValue, setDepositValue] = useState("")
   const [borrowValue, setBorrowValue] = useState("")
   const userProxy = useRecoilValue(proxyAccountAddress)
@@ -94,7 +96,7 @@ const LoanEditing = ({
         // For kovan
         const balance = await getETHBalance(address)
         setBalance(balance)
-        setToken("DEV")
+        setToken(AppContext.nativeSymbol || "ETH")
 
         // For polkadot
         // const { balance, token } = await getTotalBalanceByTokenAddress(address, ETH)
@@ -203,7 +205,7 @@ const LoanEditing = ({
       borrowAmount: borrowValue,
       proxyAddress: userProxy,
       ilk: ilk,
-      token: "ETH",
+      token: AppContext?.nativeSymbol || "ETH",
     }
 
     try {

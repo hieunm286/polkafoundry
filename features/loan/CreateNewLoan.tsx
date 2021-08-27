@@ -125,6 +125,7 @@ const CreateNewLoan = ({ ilk }: { ilk: string }) => {
         })
         setSpinning(false)
       } catch (err) {
+        console.log(err)
         setSpinning(false)
       }
     }
