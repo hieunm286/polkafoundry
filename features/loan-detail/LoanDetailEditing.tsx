@@ -5,6 +5,7 @@ import { CommonPTag, CommonSpanTag, DEFAULT_DEVICE, DivTextCenter } from "../../
 import { fire, orange } from "../../constants/color"
 import { useRecoilState, useRecoilValue } from "recoil"
 import {
+  appContext,
   connectionAccountState,
   MANAGE_LOAN_STAGE,
   manageLoanStage,
@@ -15,7 +16,7 @@ import {
   caculatorMaxpUSD,
   checkLoanOwner,
   formatFiatBalance,
-  formatInputNumber,
+  formatInputNumber, multi,
   notifySuccess,
   rem,
   sub,
@@ -59,6 +60,7 @@ interface LoanDetailEditProps {
 
 const LoanDetailEditing: React.FC<LoanDetailEditProps> = ({ onClickNext, loanInfo }) => {
   const address = useRecoilValue(connectionAccountState)
+  const AppContext = useRecoilValue(appContext)
   const [depositValue, setDepositValue] = useState("")
   const [withdrawValue, setWithdrawValue] = useState("")
   const [showAdvanceDeposit, setShowAdvanceDeposit] = useState(false)
@@ -90,7 +92,7 @@ const LoanDetailEditing: React.FC<LoanDetailEditProps> = ({ onClickNext, loanInf
         // For kovan
         const balance = await getETHBalance(address)
         setBalance(balance)
-        setToken("ETH")
+        setToken(AppContext.nativeSymbol || "ETH")
         setAdvanceToken({
           token: "pUSD",
           balance: formatFiatBalance(loanInfo?.detailData?.availableDebt),
@@ -350,7 +352,7 @@ const LoanDetailEditing: React.FC<LoanDetailEditProps> = ({ onClickNext, loanInf
       borrowAmount: advanceDeposit,
       proxyAddress: userProxy,
       ilk: loanInfo.detailData.ilk,
-      token: "ETH",
+      token: AppContext.nativeSymbol || "ETH",
     }
 
     try {
@@ -418,7 +420,7 @@ const LoanDetailEditing: React.FC<LoanDetailEditProps> = ({ onClickNext, loanInf
       paybackAmount: advanceWithdraw,
       proxyAddress: userProxy,
       ilk: loanInfo.detailData.ilk,
-      token: "ETH",
+      token: AppContext.nativeSymbol || "ETH",
       shouldPaybackAll: shouldPaybackAll,
     }
 
@@ -618,6 +620,7 @@ const LoanDetailEditing: React.FC<LoanDetailEditProps> = ({ onClickNext, loanInf
                     action={``}
                     showExchangeUSDT={true}
                     showMax={true}
+                    exchangeUSDT={multi(depositValue, loanInfo ? loanInfo.currentPrice.toString() : "0")}
                   />
                 )}
               </>
@@ -663,6 +666,8 @@ const LoanDetailEditing: React.FC<LoanDetailEditProps> = ({ onClickNext, loanInf
                     action={``}
                     showExchangeUSDT={true}
                     showMax={true}
+                    exchangeUSDT={multi(withdrawValue, loanInfo ? loanInfo.currentPrice.toString() : "0")}
+
                   />
                 )}
               </>

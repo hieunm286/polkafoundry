@@ -97,14 +97,17 @@ export const mcdData = (network = 'kovan') => {
 export const MULTICHAIN_SETUP = {
   kovan: {
     token: { ...getCollateralJoinContracts(kovan) },
-    address: { ...kovan }
+    address: { ...kovan },
+    nativeSymbol: 'ETH'
   },
   polka: {
     token: { ...getCollateralJoinContracts(polkadot) },
-    address: { ...polkadot }
+    address: { ...polkadot },
+    nativeSymbol: 'ETH'
   },
   moonbeam: {
     token: { ...getCollateralJoinContracts(moonbeam) },
-    address: { ...moonbeam }
+    address: { ...moonbeam },
+    nativeSymbol: 'DEV'
   }
 }
