@@ -1,6 +1,6 @@
 import React from "react"
 import styled from "styled-components"
-import { rem, trimAddress } from "../helpers/common-function"
+import {rem, SaveToLocalStorage, trimAddress} from "../helpers/common-function"
 import Image from "next/image"
 import { useTranslation } from "next-i18next"
 import { useRecoilState } from "recoil"
@@ -11,6 +11,22 @@ const AppHeader = () => {
   const { t, i18n } = useTranslation()
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [address, setAddress] = useRecoilState(connectionAccountState)
+
+  const connectMetaMask = async () => {
+    if (!window.ethereum) {
+      alert("You must install meta mask first")
+    }
+    try {
+      const accounts = await window.ethereum.request({
+        method: "eth_requestAccounts",
+      })
+      if (accounts[0]) {
+        setAddress(accounts[0])
+        SaveToLocalStorage("loggedWallet", 1)
+      }
+    } catch (err) {}
+  }
+
   return (
     <HeaderContainer>
       <HeaderLeft>
@@ -42,7 +58,7 @@ const AppHeader = () => {
         {address ? (
           <AddressInfo>{trimAddress(address)}</AddressInfo>
         ) : (
-          <LabelInfo>{t("connectWallet")}</LabelInfo>
+          <LabelInfo onClick={connectMetaMask}>{t("connectWallet")}</LabelInfo>
         )}
       </HeaderRight>
     </HeaderContainer>
@@ -103,6 +119,7 @@ const LabelInfo = styled.div`
   background: #2c204f;
   color: white;
   margin-right: ${rem`16px`};
+  cursor: pointer;
 `
 
 const AddressInfo = styled.div`

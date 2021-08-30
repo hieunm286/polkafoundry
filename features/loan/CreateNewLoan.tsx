@@ -153,7 +153,7 @@ const CreateNewLoan = ({ ilk }: { ilk: string }) => {
           formatInputNumber(loanInfo?.currentPrice.toString()),
         )
         const big = new BigNumber(liquidationPrice)
-        setLoanInfo({ ...loanInfo, liquidationPrice: big, [kind]: amount || undefined })
+        setLoanInfo({ ...loanInfo, liquidationPrice: big, [kind]: amount || undefined, lockedCollateral: amount })
       }
     }
   }

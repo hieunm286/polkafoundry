@@ -4,8 +4,8 @@ import { TagFilter } from "../../helpers/model"
 import TemplateListing from "../../components/TemplateListing"
 import Link from "next/link"
 import { Trans, useTranslation } from "next-i18next"
-import { useRecoilValue } from "recoil"
-import { appContext } from "../../recoil/atoms"
+import {useRecoilState, useRecoilValue, useSetRecoilState} from "recoil"
+import {appContext, pageLoading} from "../../recoil/atoms"
 import { createIlkData$ } from "../../helpers/ilks"
 import { ColumnDef } from "../../components/Table"
 import { formatCryptoBalance, formatPercent } from "../../helpers/common-function"
@@ -101,17 +101,24 @@ const LoanList = () => {
   const [searchText, setSearchtext] = useState<string>("")
   const [tagFilter, setTagFilter] = useState<TagFilter>("popular")
   const [ilks, setIlks] = useState<any>([])
+  const setLoading = useSetRecoilState(pageLoading)
   const AppContext = useRecoilValue(appContext)
 
   useEffect(() => {
     const fetchListToken = async () => {
-      if (!AppContext) return
-      const ilksData = await Promise.all(
-        Object.keys(AppContext.token)
-          .filter((ilk) => ilk !== "ETH-B" && ilk !== "ETH-C" && ilk !== "DAI")
-          .map((ilk) => createIlkData$(ilk)),
-      )
-      setIlks(ilksData)
+      try {
+        if (!AppContext) return
+        setLoading(true)
+        const ilksData = await Promise.all(
+          Object.keys(AppContext.token)
+            .filter((ilk) => ilk !== "ETH-B" && ilk !== "ETH-C" && ilk !== "DAI")
+            .map((ilk) => createIlkData$(ilk)),
+        )
+        setIlks(ilksData)
+        setLoading(false)
+      } catch (err) {
+
+      }
     }
 
     void fetchListToken()

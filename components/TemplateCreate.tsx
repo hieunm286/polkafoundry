@@ -4,7 +4,7 @@ import {
   formatCryptoBalance,
   formatFiatBalance,
   formatInputNumber,
-  formatPercent,
+  formatPercent, multi,
   rem,
 } from "../helpers/common-function"
 import { CommonPTag, CommonSpanTag, DEFAULT_DEVICE, defaultBg, Space } from "../constants/styles"
@@ -244,11 +244,11 @@ const TemplateCreate: React.FC<TemplateProp> = ({
             <CommonPTag fSize={20} fColor={"white"} weight={500}>
               {detailData
                 ? formatCryptoBalance(detailData.lockedCollateral)
-                : lockedCollateral && formatCryptoBalance(lockedCollateral)}{" "}
+                : (lockedCollateral || "--")}{" "}
               {token}
             </CommonPTag>
             <CommonPTag fSize={14} fColor={silver} weight={400} m={"10px 0 0 0"}>
-              $ {detailData ? formatFiatBalance(detailData.lockedCollateralUSD) : ""}
+              $ {detailData ? formatFiatBalance(detailData.lockedCollateralUSD) : lockedCollateral ? multi(lockedCollateral, currentPrice.toString()) : '--'}
             </CommonPTag>
           </div>
         </Grid>

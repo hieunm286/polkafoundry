@@ -60,11 +60,10 @@ const Layout: React.FC<LayoutProps> = ({ noLayout = false, children }) => {
             const proxy = await getProxyAddress(accounts[0])
             setProxyAddress(proxy)
           })
-
-          window.ethereum.on("chainChanged", () => {
-            window.location.reload()
-          })
         }
+        window.ethereum.on("chainChanged", () => {
+          window.location.reload()
+        })
       } catch (err) {
         console.log(err)
       }
