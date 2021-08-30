@@ -44,7 +44,7 @@ import {
   MCD_JOIN_ETH_A,
   MCD_JUG,
   PROXY_ACTIONS,
-} from "../../blockchain/addresses/kovan.json"
+} from "../../blockchain/addresses/moonbeam.json"
 import dsProxyActionsAbi from "../../blockchain/abi/dss-proxy-actions.json"
 import { BigNumber } from "bignumber.js"
 import ConfirmationLoanChange from "./ConfirmationLoanChange"

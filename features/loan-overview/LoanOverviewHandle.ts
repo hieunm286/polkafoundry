@@ -13,7 +13,7 @@ import { BigNumber } from "bignumber.js"
 import { HOUR, SECONDS_PER_YEAR } from "../../constants/variables"
 import { getProxyAddress, initialContract } from "../../helpers/web3"
 import getCdpsAbi from "../../blockchain/abi/get-cdps.json"
-import { CDP_MANAGER, GET_CDPS } from "../../blockchain/addresses/kovan.json"
+import { CDP_MANAGER, GET_CDPS } from "../../blockchain/addresses/moonbeam.json"
 import { ethers } from "ethers"
 
 export const fetchAllLoansByAddress = async (address: string) => {
