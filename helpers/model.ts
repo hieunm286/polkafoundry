@@ -53,7 +53,8 @@ export interface IlksFilterState {
 export interface LoanDetail {
   label: string;
   value: string | number;
-  token?: string
+  token?: string;
+  change?: string
 }
 
 export interface LoanHistory {

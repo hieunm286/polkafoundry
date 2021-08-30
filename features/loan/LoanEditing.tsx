@@ -32,7 +32,7 @@ import {
   MCD_JUG,
   CDP_MANAGER,
   MCD_JOIN_ETH_A,
-} from "../../blockchain/addresses/moonbeam.json"
+} from "../../blockchain/addresses/kovan.json"
 import { BigNumber } from "bignumber.js"
 import Link from "next/link"
 import LoanInformation from "../../components/LoanInformation"

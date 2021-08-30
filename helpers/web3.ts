@@ -1,5 +1,5 @@
 import Web3 from "web3"
-import { ETH, PROXY_REGISTRY } from "../blockchain/addresses/moonbeam.json"
+import { ETH, PROXY_REGISTRY } from "../blockchain/addresses/kovan.json"
 import dsProxyRegistryAbi from "../blockchain/abi/ds-proxy-registry.json"
 import erc20Abi from "../blockchain/abi/erc20.json"
 import {zero} from "../constants/zero";
@@ -38,8 +38,8 @@ export const changeChain = async () => {
   try {
     return await window.ethereum.request({
       method: "wallet_switchEthereumChain",
-      params: [{ chainId: "0x507" }],
-      // params: [{ chainId: '0x2a' }],
+      // params: [{ chainId: "0x507" }],
+      params: [{ chainId: '0x2a' }],
     })
   } catch (switchError) {
     console.log("switchError", switchError)

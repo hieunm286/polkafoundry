@@ -25,19 +25,7 @@ const ConfirmationLoanChange: React.FC<Prop> = ({
   return (
     <>
       <CreateLoanTitle title={`Confirm Loan Changes`} lead={`Final review of loan details.`} />
-      <LoanInformation loanInfo={review || []} />
-      {/*<Grid columns={["2fr 1fr"]} sx={{ marginTop: 4, marginBottom: 3 }}>*/}
-      {/*  {ConfirmExamData.map(({ label, value }, idx) => (*/}
-      {/*    <React.Fragment key={idx}>*/}
-      {/*      <CommonPTag fSize={14} weight={400}>*/}
-      {/*        {label}*/}
-      {/*      </CommonPTag>*/}
-      {/*      <CommonPTag fSize={14} weight={900} tAlign={`right`}>*/}
-      {/*        {value}*/}
-      {/*      </CommonPTag>*/}
-      {/*    </React.Fragment>*/}
-      {/*  ))}*/}
-      {/*</Grid>*/}
+      <LoanInformation loanInfo={tx ? [] : (review || [])} />
       <DivTextCenter>
         {tx ? (
           // Uncomment for moonbeam or kovan

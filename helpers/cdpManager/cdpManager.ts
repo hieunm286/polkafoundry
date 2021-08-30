@@ -1,6 +1,6 @@
 import { initialContract } from "../web3"
 import cdpManagerAbi from "../../blockchain/abi/dss-cdp-manager.json"
-import { CDP_MANAGER } from "../../blockchain/addresses/moonbeam.json"
+import { CDP_MANAGER } from "../../blockchain/addresses/kovan.json"
 import { BigNumber } from "bignumber.js"
 import Web3 from "web3";
 

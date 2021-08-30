@@ -85,7 +85,7 @@ export const MULTICHAIN = {
   }
 }
 
-export const mcdData = (network = 'moonbeam') => {
+export const mcdData = (network = 'kovan') => {
   return {
     ETH: {
       abi: mcdOsmAbi,

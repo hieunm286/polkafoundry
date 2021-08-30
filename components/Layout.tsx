@@ -70,7 +70,7 @@ const Layout: React.FC<LayoutProps> = ({ noLayout = false, children }) => {
     }
 
     void metaMask()
-    setAppContext(MULTICHAIN_SETUP.moonbeam)
+    setAppContext(MULTICHAIN_SETUP.kovan)
   }, [])
 
   useEffect(() => {

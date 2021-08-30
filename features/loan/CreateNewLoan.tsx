@@ -55,10 +55,10 @@ export const caculateLiquidationPrice = (
   const intMaxDebt = parseFloat(maxDebt)
   const intCurrentPrice = parseFloat(currentPrice)
 
-  if (intDeposit === 0 || intBorrow === 0) return formatInputNumber("0")
+  if (intDeposit === 0 || intBorrow === 0) return formatInputNumber("0", 2)
 
   const rs = (intBorrow / intMaxDebt / intDeposit) * intCurrentPrice
-  return formatInputNumber(rs)
+  return formatInputNumber(rs, 2)
 }
 
 const CreateNewLoan = ({ ilk }: { ilk: string }) => {

@@ -1,6 +1,6 @@
 import { initialContract } from "../web3"
 import spotAbi from "../../blockchain/abi/mcd-spot.json"
-import { MCD_SPOT } from "../../blockchain/addresses/moonbeam.json"
+import { MCD_SPOT } from "../../blockchain/addresses/kovan.json"
 import Web3 from "web3"
 import { Ilks } from "../model"
 import { amountFromRay } from "../common-function"

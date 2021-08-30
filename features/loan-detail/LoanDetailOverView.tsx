@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react"
-import { ilkToToken, rem } from "../../helpers/common-function"
+import {formatInputNumber, ilkToToken, rem} from "../../helpers/common-function"
 import styled from "styled-components"
 import TemplateCreate from "../../components/TemplateCreate"
 import { MANAGE_LOAN_STAGE, manageLoanStage, pageLoading, triggerUpdate } from "../../recoil/atoms"
@@ -12,12 +12,24 @@ import Collateral from "./Collateral"
 import { fetchLoanById } from "../loan-overview/LoanOverviewHandle"
 import { createOraclePriceData$ } from "../../helpers/pip/oracle"
 import { createIlkData$ } from "../../helpers/ilks"
+import {BigNumber} from "bignumber.js";
+import {caculateLiquidationPrice} from "../loan/CreateNewLoan";
+
+export interface EditLoan {
+  newDeposit: string;
+  newBorrow: string;
+  newLiquidation: string;
+  newCollRatio: string;
+  newAvailableToBorrow: string;
+  newAvailableToWithdraw: string;
+}
 
 const LoanDetailOverView = ({ loan }: { loan: string }) => {
   const { t } = useTranslation()
   const [tagFilter, setTagFilter] = useState<TagFilter>("pUSD")
   const [manageStage, setManageState] = useRecoilState(manageLoanStage)
   const [loanInfo, setLoanInfo] = useState<any>()
+  const [editLoan, setEditLoan] = useState<EditLoan | undefined>()
   const [detailTagFilter, setDetailTagFilter] = useState<TagFilter>("loanDetail")
   const setPageLoading = useSetRecoilState(pageLoading)
   const trigger = useRecoilValue(triggerUpdate)
@@ -84,7 +96,19 @@ const LoanDetailOverView = ({ loan }: { loan: string }) => {
       setManageState(MANAGE_LOAN_STAGE.editForm)
     } else {
       setManageState(MANAGE_LOAN_STAGE.editFormCollateral)
+    }setEditLoan(undefined)
+  }
+
+  const onNewEditLoan = (data: EditLoan) => {
+    if (data.newLiquidation === '0' || data.newCollRatio === '0' || data.newDeposit === '0' || data.newBorrow === '0') {
+      setEditLoan(undefined)
+    } else {
+      setEditLoan(data)
     }
+  }
+
+  const resetEditLoan = () => {
+    setEditLoan(undefined)
   }
 
   return (
@@ -92,6 +116,7 @@ const LoanDetailOverView = ({ loan }: { loan: string }) => {
       <TemplateCreate
         title={`${loanInfo?.ilk} Loan # ` + loan}
         loanInfo={loanInfo}
+        editLoan={editLoan}
         tagFilter={detailTagFilter}
         options={detailOptions}
         onTagChain={onDetailTagChain}
@@ -109,8 +134,8 @@ const LoanDetailOverView = ({ loan }: { loan: string }) => {
           />
         )}
 
-        {tagFilter === "pUSD" && <PUSDFilter tagFilter={tagFilter} loanInfo={loanInfo} />}
-        {tagFilter === "collateral" && <Collateral tagFilter={tagFilter} loanInfo={loanInfo} />}
+        {tagFilter === "pUSD" && <PUSDFilter tagFilter={tagFilter} loanInfo={loanInfo} onNewEditLoan={onNewEditLoan} resetEditLoan={resetEditLoan} />}
+        {tagFilter === "collateral" && <Collateral tagFilter={tagFilter} loanInfo={loanInfo} onNewEditLoan={onNewEditLoan} resetEditLoan={resetEditLoan} />}
       </CreateCard>
     </CreateContainer>
   )

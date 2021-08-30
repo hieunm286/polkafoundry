@@ -4,7 +4,8 @@ import {
   formatCryptoBalance,
   formatFiatBalance,
   formatInputNumber,
-  formatPercent, multi,
+  formatPercent,
+  multi,
   rem,
 } from "../helpers/common-function"
 import { CommonPTag, CommonSpanTag, DEFAULT_DEVICE, defaultBg, Space } from "../constants/styles"
@@ -17,18 +18,20 @@ import { ColumnDef, Table } from "./Table"
 import moment from "moment"
 import Link from "next/link"
 import { Trans, useTranslation } from "next-i18next"
+import { EditLoan } from "../features/loan-detail/LoanDetailOverView"
 
 interface TemplateProp {
   title: string
   tagFilter: TagFilter
   onTagChain: (tagFilter: TagFilter) => void
   options: { value: TagFilter; label: string }[]
+  editLoan?: EditLoan
   loanInfo?: {
     [X: string]: any
   }
 }
 
-const getAvailableToWithdraw = (
+export const getAvailableToWithdraw = (
   deposit: string,
   borrow: string,
   maxDebtPerUnitCollateral: string,
@@ -116,6 +119,7 @@ const TemplateCreate: React.FC<TemplateProp> = ({
   tagFilter,
   options,
   onTagChain,
+  editLoan,
 }) => {
   const { t } = useTranslation()
 
@@ -142,6 +146,7 @@ const TemplateCreate: React.FC<TemplateProp> = ({
         label: t("loanDetail.outstandingDebt"),
         value: detailData ? formatFiatBalance(detailData.debt) : borrow ?? 0,
         token: "pUSD",
+        change: editLoan?.newBorrow
       },
       {
         label: t("loanDetail.availableToBorrow"),
@@ -155,6 +160,7 @@ const TemplateCreate: React.FC<TemplateProp> = ({
             )
           : 0,
         token: "pUSD",
+        change: editLoan?.newAvailableToBorrow
       },
       {
         label: t("loanDetail.availableToWithDraw"),
@@ -168,6 +174,7 @@ const TemplateCreate: React.FC<TemplateProp> = ({
             )
           : 0,
         token: token,
+        change: editLoan?.newAvailableToWithdraw
       },
       {
         label: t("loanDetail.liquidationRatio"),
@@ -185,10 +192,10 @@ const TemplateCreate: React.FC<TemplateProp> = ({
         token: "",
       },
     ],
-    [loanInfo],
+    [loanInfo, editLoan],
   )
 
-  console.log(loanInfo)
+  console.log(editLoan)
 
   return (
     <Container>
@@ -207,6 +214,13 @@ const TemplateCreate: React.FC<TemplateProp> = ({
                 ? formatFiatBalance(liquidationPrice)
                 : 0}
             </CommonPTag>
+            {
+              editLoan && (
+                <CommonPTag fSize={14} weight={500}>
+                  After: ${editLoan.newLiquidation}
+                </CommonPTag>
+              )
+            }
             <CommonPTag fSize={16} fColor={silver} weight={500} m={"40px 0 0"}>
               {t("currentETHPrice")}
             </CommonPTag>
@@ -231,24 +245,36 @@ const TemplateCreate: React.FC<TemplateProp> = ({
             </CommonPTag>
             <CommonPTag fSize={48} fColor={lightGreen} weight={700}>
               {detailData
-                ? formatPercent(detailData.collateralizationRatio.times(100))
+                ? formatInputNumber(detailData.collateralizationRatio.times(100).toString(), 2)
                 : collateralizationRatio
-                ? formatPercent(collateralizationRatio.times(100))
+                ? formatInputNumber(collateralizationRatio.times(100).toString(), 2)
                 : currentPrice
                 ? caculateCollRatio(formatInputNumber(currentPrice.toString()), borrow, deposit)
-                : 0}
+                : 0}%
             </CommonPTag>
+            {
+              editLoan && (
+                <CommonPTag fSize={14} weight={500}>
+                  After: {editLoan.newCollRatio}
+                </CommonPTag>
+              )
+            }
             <CommonPTag fSize={16} fColor={silver} weight={500} m={"40px 0 0"}>
               {t("collateralLocked")}
             </CommonPTag>
             <CommonPTag fSize={20} fColor={"white"} weight={500}>
               {detailData
                 ? formatCryptoBalance(detailData.lockedCollateral)
-                : (lockedCollateral || "--")}{" "}
+                : lockedCollateral || "--"}{" "}
               {token}
             </CommonPTag>
             <CommonPTag fSize={14} fColor={silver} weight={400} m={"10px 0 0 0"}>
-              $ {detailData ? formatFiatBalance(detailData.lockedCollateralUSD) : lockedCollateral ? multi(lockedCollateral, currentPrice.toString()) : '--'}
+              ${" "}
+              {detailData
+                ? formatFiatBalance(detailData.lockedCollateralUSD)
+                : lockedCollateral
+                ? multi(lockedCollateral, currentPrice.toString())
+                : "--"}
             </CommonPTag>
           </div>
         </Grid>
@@ -267,7 +293,7 @@ const TemplateCreate: React.FC<TemplateProp> = ({
 
         {tagFilter === "loanDetail" && (
           <Grid gap={2} columns={[1, "1fr 1fr 1fr"]}>
-            {loanDetail.map(({ label, value, token }, idx) => (
+            {loanDetail.map(({ label, value, token, change }, idx) => (
               <Grid key={idx} pl={0} gap={0}>
                 <CommonPTag fSize={14} weight={400}>
                   {label}
@@ -282,6 +308,25 @@ const TemplateCreate: React.FC<TemplateProp> = ({
                     </CommonSpanTag>
                   )}
                 </Box>
+                {
+                  change && (
+                    <>
+                      <ChangeImg>
+                        <img src={`/images/icon/arrow-down.svg`} alt={``} />
+                      </ChangeImg>
+                      <Box>
+                        <CommonSpanTag fSize={16} weight={500}>
+                          {change}
+                        </CommonSpanTag>{" "}
+                        {token && (
+                          <CommonSpanTag fSize={16} weight={500}>
+                            {token}
+                          </CommonSpanTag>
+                        )}
+                      </Box>
+                    </>
+                  )
+                }
                 <Space top={40} />
               </Grid>
             ))}
@@ -357,6 +402,10 @@ const PriceLayout = styled.div`
 
 const LoanInfo = styled.div`
   width: 65%;
+`
+
+const ChangeImg = styled.div`
+  margin: ${rem(15)} 0 ${rem(15)} ${rem(30)};
 `
 
 // const Liquidation = styled.div``

@@ -1,7 +1,7 @@
 import { Ilks } from "../model"
 import { initialContract } from "../web3"
 import mcdJugAbi from "../../blockchain/abi/mcd-jug.json"
-import { MCD_JUG } from "../../blockchain/addresses/moonbeam.json"
+import { MCD_JUG } from "../../blockchain/addresses/kovan.json"
 import Web3 from "web3"
 import { BigNumber } from "bignumber.js"
 import { RAY, SECONDS_PER_YEAR } from "../../constants/variables"

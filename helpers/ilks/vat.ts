@@ -5,7 +5,7 @@ import { amountFromWei } from "@oasisdex/utils"
 import { Ilks } from "../model"
 import { BigNumber } from "bignumber.js"
 import vatAbi from "../../blockchain/abi/vat.json"
-import { CDP_MANAGER, MCD_VAT } from "../../blockchain/addresses/moonbeam.json"
+import { CDP_MANAGER, MCD_VAT } from "../../blockchain/addresses/kovan.json"
 import cdpManagerAbi from "../../blockchain/abi/dss-cdp-manager.json"
 
 export const vatIlks$ = async ({ ilks }: Ilks) => {

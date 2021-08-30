@@ -8,14 +8,19 @@ import CollateralEditing from "./CollateralEditing"
 import { CreateLoanTitle } from "../loan/CreateNewLoan"
 import CreateProxy from "../loan/CreateProxy"
 import LoanInformation from "../../components/LoanInformation"
-import { formatCryptoBalance, formatPercent } from "../../helpers/common-function"
+import {formatCryptoBalance, formatInputNumber, formatPercent, multi, sub} from "../../helpers/common-function"
+import {EditLoan} from "./LoanDetailOverView";
+import {getAvailableToWithdraw} from "../../components/TemplateCreate";
 
 interface CollateralProp {
   tagFilter: TagFilter
-  loanInfo: any
+  loanInfo: any;
+  onNewEditLoan: (data: EditLoan) => void;
+  resetEditLoan: () => void
+
 }
 
-const Collateral: React.FC<CollateralProp> = ({ loanInfo }) => {
+const Collateral: React.FC<CollateralProp> = ({ loanInfo, onNewEditLoan, resetEditLoan }) => {
   const { t } = useTranslation()
   const [manageStage, setManageStage] = useRecoilState(manageLoanStage)
 
@@ -55,6 +60,33 @@ const Collateral: React.FC<CollateralProp> = ({ loanInfo }) => {
     [loanInfo],
   )
 
+  const onNewInfo = (
+    deposit: string,
+    borrow: string,
+    newLiquidation: string,
+    newCollRatio: string,
+  ) => {
+    const newAvailableToBorrow = sub(
+      multi(deposit, loanInfo?.maxDebtPerUnitCollateral?.toString(), 5),
+      borrow,
+    )
+    const newAvailableToWithdraw = getAvailableToWithdraw(
+      deposit,
+      borrow,
+      loanInfo?.maxDebtPerUnitCollateral?.toString(),
+    )
+    const newData: EditLoan = {
+      newDeposit: formatInputNumber(deposit, 2),
+      newBorrow: formatInputNumber(borrow, 2),
+      newLiquidation,
+      newCollRatio,
+      newAvailableToBorrow: formatInputNumber(newAvailableToBorrow, 2),
+      newAvailableToWithdraw,
+    }
+
+    onNewEditLoan(newData)
+  }
+
   return (
     <>
       {(manageStage === MANAGE_LOAN_STAGE.editFormCollateral ||
@@ -69,7 +101,8 @@ const Collateral: React.FC<CollateralProp> = ({ loanInfo }) => {
                 <Space top={25} />
               </>
             )}
-            <CollateralEditing onClickNext={onClickNext} loanInfo={loanInfo} />
+            <CollateralEditing onClickNext={onClickNext} loanInfo={loanInfo} onNewInfo={onNewInfo}
+                               resetEditLoan={resetEditLoan} />
           </>
           {manageStage !== MANAGE_LOAN_STAGE.confirmationCollateral && (
             <LoanInformation loanInfo={PUSDInfo} />

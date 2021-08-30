@@ -1,7 +1,7 @@
 import { Ilks } from "../model"
 import { initialContract } from "../web3"
 import mcdCatAbi from "../../blockchain/abi/mcd-cat.json"
-import { MCD_CAT } from "../../blockchain/addresses/moonbeam.json"
+import { MCD_CAT } from "../../blockchain/addresses/kovan.json"
 import Web3 from "web3"
 import { amountFromWei } from "@oasisdex/utils"
 import { amountFromRad } from "../common-function"

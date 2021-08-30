@@ -43,7 +43,7 @@ import {
   MCD_JUG,
   PROXY_ACTIONS,
   MCD_DAI,
-} from "../../blockchain/addresses/moonbeam.json"
+} from "../../blockchain/addresses/kovan.json"
 import dsProxyActionsAbi from "../../blockchain/abi/dss-proxy-actions.json"
 import { BigNumber } from "bignumber.js"
 import { MaxUint } from "../../constants/variables"
@@ -52,7 +52,9 @@ import { caculateLiquidationPrice } from "../loan/CreateNewLoan"
 
 interface LoanDetailEditProps {
   onClickNext: () => void
-  loanInfo: any
+  loanInfo: any;
+  onNewInfo: (deposit: string, borrow: string, newLiquidation: string, newCollRatio: string) => void;
+  resetEditLoan: () => void
 }
 
 export const ERRORS_LIST = {
@@ -64,7 +66,7 @@ export const ERRORS_LIST = {
   greaterThanBorrowPUSD: "You are borrowing too much. Please borrow less PUSD",
 }
 
-const CollateralEditing: React.FC<LoanDetailEditProps> = ({ onClickNext, loanInfo }) => {
+const CollateralEditing: React.FC<LoanDetailEditProps> = ({ onClickNext, loanInfo, onNewInfo, resetEditLoan }) => {
   const address = useRecoilValue(connectionAccountState)
   const AppContext = useRecoilValue(appContext)
   const [depositValue, setDepositValue] = useState("")
@@ -103,7 +105,7 @@ const CollateralEditing: React.FC<LoanDetailEditProps> = ({ onClickNext, loanInf
     }
 
     void getWalletBalance()
-  }, [address])
+  }, [address, trigger])
 
   useEffect(() => {
     if (!address || !userProxy) {
@@ -147,6 +149,24 @@ const CollateralEditing: React.FC<LoanDetailEditProps> = ({ onClickNext, loanInf
         formatInputNumber(loanInfo?.detailData?.availableDebt?.toString()),
       ),
     })
+    if (!e.target.value || parseFloat(e.target.value) === 0) {
+      resetEditLoan()
+    } else {
+      const newDeposit = sum(value || "0", loanInfo.detailData?.lockedCollateral.toString() || '0')
+      const newBorrow = sum(loanInfo?.detailData?.debt.toString() || '0', advanceDeposit || '0')
+
+      const liquidationPrice = caculateLiquidationPrice(
+        newDeposit,
+        newBorrow,
+        formatInputNumber(loanInfo?.maxDebtPerUnitCollateral?.toString()),
+        formatInputNumber(loanInfo?.currentPrice.toString()),
+      )
+
+      const newCollRatio = caculateCollRatio(loanInfo?.currentPrice.toString(), newBorrow, newDeposit)
+
+      onNewInfo(newDeposit, newBorrow, liquidationPrice, newCollRatio)
+    }
+
     if (type !== "deposit") {
       setType("deposit")
     }
@@ -157,6 +177,24 @@ const CollateralEditing: React.FC<LoanDetailEditProps> = ({ onClickNext, loanInf
     const value = formatInputNumber(e.target.value)
 
     setWithdrawValue(value)
+    if (!e.target.value || parseFloat(e.target.value) === 0) {
+      resetEditLoan()
+    } else {
+      // Re caculate
+      const newDeposit = sub(loanInfo.detailData?.lockedCollateral.toString() || '0', value || "0")
+      const newBorrow = sub(loanInfo?.detailData?.debt.toString() || '0', advanceWithdraw || '0')
+      const liquidationPrice = caculateLiquidationPrice(
+        newDeposit,
+        newBorrow,
+        formatInputNumber(loanInfo?.maxDebtPerUnitCollateral?.toString()),
+        formatInputNumber(loanInfo?.currentPrice.toString()),
+      )
+
+      const newCollRatio = caculateCollRatio(loanInfo?.currentPrice.toString(), newBorrow, newDeposit)
+
+      onNewInfo(newDeposit, newBorrow, liquidationPrice, newCollRatio)
+    }
+
     if (type !== "withdraw") {
       setType("withdraw")
     }
@@ -237,11 +275,44 @@ const CollateralEditing: React.FC<LoanDetailEditProps> = ({ onClickNext, loanInf
   const onChangeAdvanceDeposit = (e: React.ChangeEvent<HTMLInputElement>) => {
     // checkBorrowValid(e.target.value, advanceToken.balance)
     setAdvanceDeposit(formatInputNumber(e.target.value))
+    if (!e.target.value || parseFloat(e.target.value) === 0) {
+      resetEditLoan()
+    } else {
+      const newDeposit = sum(depositValue || "0", loanInfo.detailData?.lockedCollateral.toString() || '0')
+      const newBorrow = sum(loanInfo?.detailData?.debt.toString() || '0', e.target.value)
+
+      const liquidationPrice = caculateLiquidationPrice(
+        newDeposit,
+        newBorrow,
+        formatInputNumber(loanInfo?.maxDebtPerUnitCollateral?.toString()),
+        formatInputNumber(loanInfo?.currentPrice.toString()),
+      )
+      const newCollRatio = caculateCollRatio(loanInfo?.currentPrice.toString(), newBorrow, newDeposit)
+
+      onNewInfo(newDeposit, newBorrow, liquidationPrice, newCollRatio)
+    }
+
   }
 
   const onChangeAdvanceWithdraw = (e: React.ChangeEvent<HTMLInputElement>) => {
     checkDebtValid(e.target.value, advanceToken.balance)
     setAdvanceWithdraw(formatInputNumber(e.target.value))
+    if (!e.target.value || parseFloat(e.target.value) === 0) {
+      resetEditLoan()
+    } else {
+      const newDeposit = sub(loanInfo.detailData?.lockedCollateral.toString() || '0', withdrawValue || "0")
+      const newBorrow = sub(loanInfo?.detailData?.debt.toString() || '0', e.target.value || '0')
+      const liquidationPrice = caculateLiquidationPrice(
+        newDeposit,
+        newBorrow,
+        formatInputNumber(loanInfo?.maxDebtPerUnitCollateral?.toString()),
+        formatInputNumber(loanInfo?.currentPrice.toString()),
+      )
+
+      const newCollRatio = caculateCollRatio(loanInfo?.currentPrice.toString(), newBorrow, newDeposit)
+      onNewInfo(newDeposit, newBorrow, liquidationPrice, newCollRatio)
+    }
+
   }
 
   const onChangeShowAdvanceDeposit = async (): Promise<void> => {
@@ -276,6 +347,7 @@ const CollateralEditing: React.FC<LoanDetailEditProps> = ({ onClickNext, loanInf
 
   const onClickBack = () => {
     setManageStage(MANAGE_LOAN_STAGE.editFormCollateral)
+    setTx(undefined)
   }
 
   const handleConfirmChangeLoan = async () => {
@@ -334,6 +406,10 @@ const CollateralEditing: React.FC<LoanDetailEditProps> = ({ onClickNext, loanInf
           setTx(receipt.transactionHash)
           setLoading(false)
           setTrigger(!trigger)
+          setAdvanceWithdraw('')
+          setAdvanceDeposit('')
+          setDepositValue('')
+          setWithdrawValue('')
         })
     } catch (err) {
       console.log(err)
@@ -403,6 +479,10 @@ const CollateralEditing: React.FC<LoanDetailEditProps> = ({ onClickNext, loanInf
           setTx(receipt.transactionHash)
           setLoading(false)
           setTrigger(!trigger)
+          setAdvanceWithdraw('')
+          setAdvanceDeposit('')
+          setDepositValue('')
+          setWithdrawValue('')
         })
     } catch (err) {
       console.log(err)
@@ -439,6 +519,7 @@ const CollateralEditing: React.FC<LoanDetailEditProps> = ({ onClickNext, loanInf
     } else if (type === "withdraw") {
       await handleWithdraw()
     }
+    resetEditLoan()
   }
 
   const reviewDeposit = useMemo(
@@ -486,7 +567,7 @@ const CollateralEditing: React.FC<LoanDetailEditProps> = ({ onClickNext, loanInf
           : loanInfo?.detailData.liquidationPrice,
       },
     ],
-    [loanInfo, depositValue, advanceDeposit, balance],
+    [loanInfo, depositValue, advanceDeposit, balance, trigger],
   )
 
   const reviewWithdraw = useMemo(
@@ -534,12 +615,12 @@ const CollateralEditing: React.FC<LoanDetailEditProps> = ({ onClickNext, loanInf
           : loanInfo?.detailData.liquidationPrice,
       },
     ],
-    [loanInfo, withdrawValue, advanceWithdraw, balance],
+    [loanInfo, withdrawValue, advanceWithdraw, balance, trigger],
   )
 
   const review = useMemo(
     () => (type === "deposit" ? reviewDeposit : reviewWithdraw),
-    [type, reviewWithdraw, reviewDeposit],
+    [type, reviewWithdraw, reviewDeposit, trigger],
   )
 
   return (

@@ -1,9 +1,5 @@
 import React, { useMemo } from "react"
-import {
-  MANAGE_LOAN_STAGE,
-  manageLoanStage,
-  proxyAccountAddress,
-} from "../../recoil/atoms"
+import { MANAGE_LOAN_STAGE, manageLoanStage, proxyAccountAddress } from "../../recoil/atoms"
 import { CommonPTag, Space } from "../../constants/styles"
 import LoanDetailEditing from "./LoanDetailEditing"
 import { useRecoilState, useRecoilValue } from "recoil"
@@ -12,15 +8,19 @@ import { TagFilter } from "../../helpers/model"
 import CreateProxy from "../loan/CreateProxy"
 import { CreateLoanTitle } from "../loan/CreateNewLoan"
 import { ethers } from "ethers"
-import { formatCryptoBalance, formatPercent } from "../../helpers/common-function"
+import {formatCryptoBalance, formatInputNumber, formatPercent, multi, sub} from "../../helpers/common-function"
 import LoanInformation from "../../components/LoanInformation"
+import { getAvailableToWithdraw } from "../../components/TemplateCreate"
+import { EditLoan } from "./LoanDetailOverView"
 
 interface PUSDProps {
   tagFilter: TagFilter
   loanInfo: any
+  onNewEditLoan: (data: EditLoan) => void;
+  resetEditLoan: () => void
 }
 
-const PUSDFilter: React.FC<PUSDProps> = ({ loanInfo }) => {
+const PUSDFilter: React.FC<PUSDProps> = ({ loanInfo, onNewEditLoan, resetEditLoan }) => {
   const { t } = useTranslation()
   const [manageStage, setManageStage] = useRecoilState(manageLoanStage)
   const userProxy = useRecoilValue(proxyAccountAddress)
@@ -65,6 +65,33 @@ const PUSDFilter: React.FC<PUSDProps> = ({ loanInfo }) => {
     [loanInfo],
   )
 
+  const onNewInfo = (
+    deposit: string,
+    borrow: string,
+    newLiquidation: string,
+    newCollRatio: string,
+  ) => {
+    const newAvailableToBorrow = sub(
+      multi(deposit, loanInfo?.maxDebtPerUnitCollateral?.toString(), 5),
+      borrow,
+    )
+    const newAvailableToWithdraw = getAvailableToWithdraw(
+      deposit,
+      borrow,
+      loanInfo?.maxDebtPerUnitCollateral?.toString(),
+    )
+    const newData: EditLoan = {
+      newDeposit: formatInputNumber(deposit, 2),
+      newBorrow: formatInputNumber(borrow, 2),
+      newLiquidation,
+      newCollRatio,
+      newAvailableToBorrow: formatInputNumber(newAvailableToBorrow, 2),
+      newAvailableToWithdraw,
+    }
+
+    onNewEditLoan(newData)
+  }
+
   return (
     <>
       {(manageStage === MANAGE_LOAN_STAGE.editForm ||
@@ -79,7 +106,12 @@ const PUSDFilter: React.FC<PUSDProps> = ({ loanInfo }) => {
                 <Space top={25} />
               </>
             )}
-            <LoanDetailEditing onClickNext={onClickNext} loanInfo={loanInfo} />
+            <LoanDetailEditing
+              onClickNext={onClickNext}
+              loanInfo={loanInfo}
+              onNewInfo={onNewInfo}
+              resetEditLoan={resetEditLoan}
+            />
           </>
           {manageStage !== MANAGE_LOAN_STAGE.confirmation && (
             <LoanInformation loanInfo={PUSDInfo} />
